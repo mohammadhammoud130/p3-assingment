@@ -8,7 +8,7 @@ public class Login extends JPanel {
         JPanel panel=new JPanel(new GridLayout(1,2));
         JPanel leftPanel =new JPanel(new BorderLayout());
         leftPanel.setBackground(new Color(216,219,227));
-        ImageIcon icon=new ImageIcon(Login.class.getResource("/logg.jpg"));
+        ImageIcon icon=new ImageIcon(Login.class.getResource("view/logg.jpg"));
         JLabel iconlabel=new JLabel(icon,JLabel.CENTER);
         leftPanel.add(iconlabel,BorderLayout.CENTER);
         JPanel rightPanel=new JPanel();
