@@ -1,15 +1,19 @@
 package controller;
 
+import exception.UserAlreadyLoggedInException;
 import model.Rule;
 import model.User;
 
 import java.io.*;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class UserController {
-    private HashMap<String,User> users = new HashMap<>();
+    private static HashMap<String,User> users = new HashMap<>();
     private static final String usersFilePath = "/data/Users";
+    private static final Set<String> loggedInUsers = new HashSet<>();
+
 
     public static HashMap<String, User> loadUsers() {
         HashMap<String, User> users = new HashMap<>();
@@ -104,24 +108,39 @@ public class UserController {
         }
     }
 
-    public boolean  Login(String userName, String password, Rule rule){
-        if(users.containsKey(userName)){
-            User user = users.get(userName);
-            if(user.getPassword().equals(password) && user.getRule().equals(rule)){
-                if(!user.isLogged())
-                    return true;
-                else{
-                    ;
-                }
-            }else {
-                System.err.println("Password or Rule is wrong! ");
-                ErrorLogger.logWarning("Password or Rule is wrong! ");
-                return false;
-                return false;
-            }
-        }else
-            return false;
+    public static void login(String username, String password,Rule rule) {
+        User user = users.get(username);
 
+        if (user == null) {
+            ErrorLogger.logWarning("User not found: " + username);
+            throw new IllegalArgumentException("User not found: " + username);
+        }
+
+        if (!user.getPassword().equals(password)) {
+            ErrorLogger.logWarning("Incorrect password for user: " + username);
+            throw new IllegalArgumentException("Incorrect password for user: " + username);
+        }
+
+        if (loggedInUsers.contains(username)) {
+                String msg = "User \"" + username + "\" attempted to log in twice.";
+                System.err.println(msg);
+                ErrorLogger.logWarning(msg);
+                throw new UserAlreadyLoggedInException(username);
+        }
+        if(user.getRule().equals(rule)){
+            System.err.println("Incorrect rule for user: " + rule.name());
+        }
+        loggedInUsers.add(username);
+        System.out.println("User logged in: " + username);
+//        if(rule.equals(Rule.Manager)){
+//
+//        } else if (rule.equals(Rule.ProductionSupervisor)) {
+//
+//        }
+    }
+
+    public static void logout(String username){
+        loggedInUsers.remove(username);
     }
 
 }
