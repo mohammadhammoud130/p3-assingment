@@ -1,7 +1,6 @@
 package controller;
 
 import model.*;
-
 import java.io.*;
 import java.time.LocalDate;
 import java.util.*;
@@ -10,54 +9,77 @@ public class TaskController {
     private static HashMap<Integer, Task> tasks = new HashMap<>();
     private static final String tasksFilePath = "/data/Tasks.csv";
 
-    static { tasks = tasksLoader(); }
-
-    private static HashMap<Integer, Task> tasksLoader() {
+    public static HashMap<Integer, Task> tasksLoader() {
         HashMap<Integer, Task> loadedTasks = new HashMap<>();
         File file = new File(tasksFilePath);
         int maxId = 0;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line = reader.readLine(); // skip header
+
+            String line = reader.readLine();
+
             while ((line = reader.readLine()) != null) {
                 try {
                     String[] fields = line.split(",");
-                    if (fields.length < 8) continue;
+                    if (fields.length < 8) {
+                        System.err.println("Invalid Task line: " + line);
+                        ErrorLogger.logWarning("Invalid Task line: " + line);
+                        continue;
+                    }
 
-                    int id = Integer.parseInt(fields[0]);
-                    int productId = Integer.parseInt(fields[1]);
-                    int requiredQuantity = Integer.parseInt(fields[2]);
-                    String client = fields[3];
-                    LocalDate startDate = LocalDate.parse(fields[4]);
-                    LocalDate deliveryDate = LocalDate.parse(fields[5]);
-                    String status = fields[6];
-                    double progress = Double.parseDouble(fields[7]);
+                    int id = Integer.parseInt(fields[0].trim());
+                    int productId = Integer.parseInt(fields[1].trim());
+                    int requiredQuantity = Integer.parseInt(fields[2].trim());
+                    String client = fields[3].trim();
+                    LocalDate startDate = LocalDate.parse(fields[4].trim());
+                    LocalDate deliveryDate = LocalDate.parse(fields[5].trim());
+                    Status status = Status.valueOf(fields[6].trim());
+                    double progress = Double.parseDouble(fields[7].trim());
 
-                    // EDITED: fetch Product object by ID
                     Product requiredProduct = ProductController.getProducts().get(productId);
+                    if (requiredProduct == null) {
+                        String msg = "Referenced product ID " + productId + " not found for Task " + id;
+                        System.err.println(msg);
+                        ErrorLogger.logWarning(msg);
+                        continue;
+                    }
 
                     Task task = new Task(requiredProduct, requiredQuantity, client,
                             startDate, deliveryDate, status, progress, null);
-                    loadedTasks.put(id, task);
 
+                    loadedTasks.put(id, task);
                     if (id > maxId) maxId = id;
+
+                } catch (NumberFormatException e) {
+                    System.err.println("Number format error in Task line: " + line);
+                    ErrorLogger.logWarning("Number format error in Task line: " + line);
+                } catch (NullPointerException e) {
+                    System.err.println("Null value found in Task line: " + line);
+                    ErrorLogger.logWarning("Null value found in Task line: " + line);
                 } catch (Exception e) {
-                    System.err.println("Error parsing Task line: " + line);
+                    System.err.println("Unexpected error parsing Task line: " + line);
+                    ErrorLogger.logWarning("Unexpected error parsing Task line: " + line);
                 }
             }
+
+        } catch (FileNotFoundException e) {
+            System.err.println("Tasks file not found: " + tasksFilePath);
+            ErrorLogger.logWarning("Tasks file not found: " + tasksFilePath);
+        } catch (SecurityException e) {
+            System.err.println("No permission to read Tasks file: " + tasksFilePath);
+            ErrorLogger.logWarning("No permission to read Tasks file: " + tasksFilePath);
         } catch (IOException e) {
             System.err.println("Error reading Tasks file: " + e.getMessage());
+            ErrorLogger.logWarning("Error reading Tasks file: " + e.getMessage());
         }
 
-        // EDITED: reset counter after loading
         Task.resetIdCounter(maxId + 1);
-
         return loadedTasks;
     }
 
-    // EDITED: write tasks back to CSV
     public static void updateTasksFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(tasksFilePath))) {
+
             writer.write("id,productId,requiredQuantity,client,startDate,deliveryDate,status,progress");
             writer.newLine();
 
@@ -65,7 +87,7 @@ public class TaskController {
                 if (task == null) continue;
 
                 writer.write(task.getId() + "," +
-                        task.getRequiresdProduct().getId() + "," +   // only productId
+                        task.getRequiresdProduct().getId() + "," +
                         task.getRequiredQuantity() + "," +
                         task.getClient() + "," +
                         task.getStartDate() + "," +
@@ -74,143 +96,184 @@ public class TaskController {
                         task.getProgress());
                 writer.newLine();
             }
+
+        } catch (FileNotFoundException e) {
+            System.err.println("Tasks file not found when writing: " + tasksFilePath);
+            ErrorLogger.logWarning("Tasks file not found when writing: " + tasksFilePath);
+        } catch (SecurityException e) {
+            System.err.println("No permission to write Tasks file: " + tasksFilePath);
+            ErrorLogger.logWarning("No permission to write Tasks file: " + tasksFilePath);
         } catch (IOException e) {
             System.err.println("Error writing Tasks file: " + e.getMessage());
+            ErrorLogger.logWarning("Error writing Tasks file: " + e.getMessage());
         }
     }
 
     public static void addTask(int productLineID, Task task) {
         try {
             boolean itemAvailable = task.checkMaterials();
-            if (itemAvailable) {
-                tasks.put(task.getId(), task);
-                task.setStatus("Active");
-                task.setAssignedLine(ProductLineController.getProductLines().get(productLineID));
 
-                // EDITED: append to file
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(tasksFilePath, true))) {
-                    writer.write(task.getId() + "," +
-                            task.getRequiresdProduct().getId() + "," +
-                            task.getRequiredQuantity() + "," +
-                            task.getClient() + "," +
-                            task.getStartDate() + "," +
-                            task.getDeliveryDate() + "," +
-                            task.getStatus() + "," +
-                            task.getProgress() + "\n");
-                }
-                System.out.println("The task has been added successfully!");
-            } else {
-                System.out.println("Failed to add task: item not available or minimum threshold check failed.");
+            if (!itemAvailable) {
+                String msg = "Failed to add task: insufficient materials.";
+                System.err.println(msg);
+                ErrorLogger.logWarning(msg);
+                return;
             }
+
+            tasks.put(task.getId(), task);
+            task.setStatus(Status.ACTIVE);
+
+            ProductLine line = ProductLineController.getProductLines().get(productLineID);
+            if (line == null) {
+                String msg = "ProductLine with ID " + productLineID + " not found.";
+                System.err.println(msg);
+                ErrorLogger.logWarning(msg);
+                return;
+            }
+
+            task.setAssignedLine(line);
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(tasksFilePath, true))) {
+                writer.write(task.getId() + "," +
+                        task.getRequiresdProduct().getId() + "," +
+                        task.getRequiredQuantity() + "," +
+                        task.getClient() + "," +
+                        task.getStartDate() + "," +
+                        task.getDeliveryDate() + "," +
+                        task.getStatus() + "," +
+                        task.getProgress() + "\n");
+            }
+
+            System.out.println("The task has been added successfully.");
+
         } catch (Exception e) {
             System.err.println("Error adding task: " + e.getMessage());
+            ErrorLogger.logWarning("Error adding task: " + e.getMessage());
         }
     }
 
     public ArrayList<Task> activeTasks() {
-        ArrayList<Task> activeTasks = new ArrayList<>();
+        ArrayList<Task> result = new ArrayList<>();
 
         if (tasks == null) {
-            ErrorLogger.logWarning("Task list is not initialized!");
-            throw new IllegalStateException("Task list is not initialized!");
+            String msg = "Task list is not initialized.";
+            ErrorLogger.logWarning(msg);
+            throw new IllegalStateException(msg);
         }
 
         for (Task task : tasks.values()) {
             if (task == null) {
-                ErrorLogger.logWarning("Null task encountered in tasks list.");
+                ErrorLogger.logWarning("Null task encountered in activeTasks.");
                 continue;
             }
 
-            String status = task.getStatus();
+            Status status = task.getStatus();
             if (status == null) {
-                ErrorLogger.logWarning("Task with ID " + task.getId() + " has null status.");
+                ErrorLogger.logWarning("Task " + task.getId() + " has null status.");
                 continue;
             }
 
-            if (status.trim().equalsIgnoreCase("Active")) {
-                activeTasks.add(task);
-            }
+            if (status == Status.ACTIVE) result.add(task);
         }
 
-        return activeTasks;
+        return result;
     }
 
     public ArrayList<Task> pausedTasks() {
-        ArrayList<Task> pausedTasks = new ArrayList<>();
+        ArrayList<Task> result = new ArrayList<>();
+
         if (tasks == null) {
-            ErrorLogger.logWarning("Task list is not initialized!");
-            throw new IllegalStateException("Task list is not initialized!");
+            String msg = "Task list is not initialized.";
+            ErrorLogger.logWarning(msg);
+            throw new IllegalStateException(msg);
         }
+
         for (Task task : tasks.values()) {
             if (task == null) {
-                ErrorLogger.logWarning("Null task encountered in tasks list.");
+                ErrorLogger.logWarning("Null task encountered in pausedTasks.");
                 continue;
             }
-            String status = task.getStatus();
+
+            Status status = task.getStatus();
             if (status == null) {
-                ErrorLogger.logWarning("Task with ID " + task.getId() + " has null status.");
+                ErrorLogger.logWarning("Task " + task.getId() + " has null status.");
                 continue;
             }
-            if (status.trim().equalsIgnoreCase("Paused")) {
-                pausedTasks.add(task);
-            }
+
+            if (status == Status.PAUSED) result.add(task);
         }
-        return pausedTasks;
+
+        return result;
     }
 
     public ArrayList<Task> finishedTasks() {
-        ArrayList<Task> finishedTasks = new ArrayList<>();
+        ArrayList<Task> result = new ArrayList<>();
+
         if (tasks == null) {
-            ErrorLogger.logWarning("Task list is not initialized!");
-            throw new IllegalStateException("Task list is not initialized!");
+            String msg = "Task list is not initialized.";
+            ErrorLogger.logWarning(msg);
+            throw new IllegalStateException(msg);
         }
+
         for (Task task : tasks.values()) {
             if (task == null) {
-                ErrorLogger.logWarning("Null task encountered in tasks list.");
+                ErrorLogger.logWarning("Null task encountered in finishedTasks.");
                 continue;
             }
-            String status = task.getStatus();
+
+            Status status = task.getStatus();
             if (status == null) {
-                ErrorLogger.logWarning("Task with ID " + task.getId() + " has null status.");
+                ErrorLogger.logWarning("Task " + task.getId() + " has null status.");
                 continue;
             }
-            if (status.trim().equalsIgnoreCase("Finished")) {
-                finishedTasks.add(task);
-            }
+
+            if (status == Status.FINISHED) result.add(task);
         }
-        return finishedTasks;
+
+        return result;
     }
 
     public void cancelTask(int taskId) {
-
-        if(!tasks.containsKey(taskId)){
-            System.out.println(" Task with Id "+taskId+" not found. ");
-            return ;}
-        if(tasks.get(taskId).getProgress()==100.0){
-            System.out.println(" can’t cancel a completed task..! ");
+        if (!tasks.containsKey(taskId)) {
+            String msg = "Task with ID " + taskId + " not found.";
+            System.err.println(msg);
+            ErrorLogger.logWarning(msg);
+            return;
         }
-        else {
-            Task requiredTask = tasks.get(taskId);
-            for(Map.Entry<Item,Integer>entry :requiredTask.getRequiresdProduct().getRequiredItems().entrySet()){
-                int totalQuantity =entry.getValue()*requiredTask.getRequiredQuantity();
-                ItemController.updateItemQTY(entry.getKey().getId(),totalQuantity,true);
+
+        Task task = tasks.get(taskId);
+
+        if (task.getProgress() == 100.0) {
+            System.out.println("Cannot cancel a completed task.");
+            return;
+        }
+
+        try {
+            for (Map.Entry<Item, Integer> entry : task.getRequiresdProduct().getRequiredItems().entrySet()) {
+                int totalQty = entry.getValue() * task.getRequiredQuantity();
+                ItemController.updateItemQTY(entry.getKey().getId(), totalQty, true);
             }
+
             tasks.remove(taskId);
-            System.out.println(" The task has been cancelled..! ");
+            System.out.println("Task cancelled successfully.");
 
+        } catch (Exception e) {
+            System.err.println("Error cancelling task: " + e.getMessage());
+            ErrorLogger.logWarning("Error cancelling task: " + e.getMessage());
         }
-
     }
 
     public void showTaskForProd(String prodName, ArrayList<ProductLine> lines) {
         if (prodName == null || prodName.trim().isEmpty()) {
-            ErrorLogger.logWarning("Product name is null or empty.");
-            throw new IllegalArgumentException("Product name cannot be null or empty.");
+            String msg = "Product name cannot be null or empty.";
+            ErrorLogger.logWarning(msg);
+            throw new IllegalArgumentException(msg);
         }
 
         if (lines == null) {
-            ErrorLogger.logWarning("Product lines list is not initialized.");
-            throw new IllegalStateException("Product lines list is not initialized.");
+            String msg = "Product lines list is not initialized.";
+            ErrorLogger.logWarning(msg);
+            throw new IllegalStateException(msg);
         }
 
         if (lines.isEmpty()) {
@@ -220,32 +283,31 @@ public class TaskController {
 
         boolean found = false;
 
-        for (ProductLine productLine : lines) {
-            if (productLine == null || productLine.getTasks() == null) {
-                ErrorLogger.logWarning("Null product line or tasks list encountered.");
+        for (ProductLine line : lines) {
+            if (line == null || line.getTasks() == null) {
+                ErrorLogger.logWarning("Null ProductLine or task list encountered.");
                 continue;
             }
 
-            for (Task task : productLine.getTasks()) {
+            for (Task task : line.getTasks()) {
                 if (task == null || task.getRequiresdProduct() == null) {
                     ErrorLogger.logWarning("Null task or required product encountered.");
                     continue;
                 }
 
-                String taskProdName = task.getRequiresdProduct().getName();
-                if (taskProdName != null && taskProdName.equalsIgnoreCase(prodName)) {
+                if (prodName.equalsIgnoreCase(task.getRequiresdProduct().getName())) {
                     if (!found) {
-                        System.out.println("Tasks of product \"" + prodName + "\":");
+                        System.out.println("Tasks for product \"" + prodName + "\":");
                         found = true;
                     }
 
-                    System.out.println(" assignedLine: " + productLine.getName());
-                    System.out.println(" ID: " + task.getId());
-                    System.out.println(" requiredQuantity: " + task.getRequiredQuantity());
-                    System.out.println(" client: " + task.getClient());
-                    System.out.println(" progress: " + task.getProgress());
-                    System.out.println(" startDate: " + task.getStartDate());
-                    System.out.println(" deliveryDate: " + task.getDeliveryDate());
+                    System.out.println("assignedLine: " + line.getName());
+                    System.out.println("ID: " + task.getId());
+                    System.out.println("requiredQuantity: " + task.getRequiredQuantity());
+                    System.out.println("client: " + task.getClient());
+                    System.out.println("progress: " + task.getProgress());
+                    System.out.println("startDate: " + task.getStartDate());
+                    System.out.println("deliveryDate: " + task.getDeliveryDate());
                     System.out.println("-----------------------------------");
                 }
             }
@@ -260,4 +322,7 @@ public class TaskController {
         return tasks;
     }
 
+    public static void setTasks(HashMap<Integer, Task> tasks) {
+        TaskController.tasks = tasks;
+    }
 }

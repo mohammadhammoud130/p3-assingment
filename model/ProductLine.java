@@ -6,11 +6,11 @@ public class ProductLine {
     private static int nextId = 1; // shared counter
     private final int id ;
     private String name;
-    private String status;
+    private Status status;
     private ArrayList<Task> tasks;
 
 
-    public ProductLine(String name, String status, ArrayList<Task> tasks) {
+    public ProductLine(String name, Status status, ArrayList<Task> tasks) {
         this.id = nextId++;
         this.name = name;
         this.status = status;
@@ -18,7 +18,7 @@ public class ProductLine {
     }
 
     // Constructor for reloading from CSV or external source
-    public ProductLine(int id, String name, String status, ArrayList<Task> tasks) {
+    public ProductLine(int id, String name, Status status, ArrayList<Task> tasks) {
         this.id = id;
         this.name = name;
         this.status = status;
@@ -42,11 +42,11 @@ public class ProductLine {
         this.name = name;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Status Status) {
         this.status = status;
     }
 

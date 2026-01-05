@@ -13,7 +13,7 @@ public class Task {
     private String client;
     private LocalDate startDate;
     private LocalDate deliveryDate;
-    private String status;  // ["Active", "Finished", "Paused"]
+    private Status status;  // ["Active", "Finished", "Paused"]
     private double progress;
     private ProductLine assignedLine;
 
@@ -25,7 +25,7 @@ public class Task {
     // Constructor with validation
     public Task(Product requiredProduct, int requiredQuantity, String client,
                 LocalDate startDate, LocalDate deliveryDate,
-                String status, double progress, ProductLine assignedLine) {
+                Status status, double progress, ProductLine assignedLine) {
 
         if (requiredProduct == null) {
             throw new IllegalArgumentException("Required product cannot be null.");
@@ -42,9 +42,10 @@ public class Task {
         if (deliveryDate.isBefore(startDate)) {
             throw new IllegalArgumentException("Delivery date cannot be before start date.");
         }
-        if (status == null || !(status.equalsIgnoreCase("Active")
-                || status.equalsIgnoreCase("Finished")
-                || status.equalsIgnoreCase("Paused"))) {
+        if (status == null ||
+             (!status.name().trim().equalsIgnoreCase("ACTIVE") &&
+              !status.name().trim().equalsIgnoreCase("PAUSED") &&
+              !status.name().trim().equalsIgnoreCase("FINISHED"))){
             throw new IllegalArgumentException("Invalid status: " + status);
         }
         if (progress < 0 || progress > 100) {
@@ -129,9 +130,9 @@ public class Task {
 
     public void setDeliveryDate(LocalDate deliveryDate) { this.deliveryDate = deliveryDate; }
 
-    public String getStatus() { return status; }
+    public Status getStatus() { return status; }
 
-    public void setStatus(String status) { this.status = status; }
+    public void setStatus(Status status) { this.status = status; }
 
     public double getProgress() { return progress; }
 
