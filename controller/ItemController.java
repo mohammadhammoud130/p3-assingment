@@ -7,7 +7,7 @@ import java.util.*;
 
 public class ItemController {
     private static HashMap<Integer, Item> items = new HashMap<>();
-    private static final String itemsFilePath = "/data/Items.csv";
+    private static final String itemsFilePath = "src/data/Items.csv";
 
     public static HashMap<Integer, Item> itemsLoader() {
         HashMap<Integer, Item> inventory = new HashMap<>();

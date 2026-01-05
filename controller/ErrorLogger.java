@@ -18,7 +18,7 @@ public class ErrorLogger {
         String logEntry = "[" + timestamp + "] " + message;
 
         // Write to error.txt (append mode)
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("error.txt", true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/data/error.txt", true))) {
             writer.write(logEntry);
             writer.newLine();
         } catch (FileNotFoundException e) {
