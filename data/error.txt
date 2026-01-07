@@ -1,0 +1,24 @@
+[2026-01-05 23:34:53] Users file not found: src/data/Users
+[2026-01-05 23:34:53] Tasks file not found: src/data/Tasks.csv
+[2026-01-05 23:38:13] Items file not found: data/Items.csv
+[2026-01-05 23:39:44] Users file not found: src/data/Users
+[2026-01-05 23:39:44] Items file not found: data/Items.csv
+[2026-01-05 23:39:44] Tasks file not found: src/data/Tasks.csv
+[2026-01-05 23:41:27] Users file not found: src/data/Users
+[2026-01-05 23:41:27] Items file not found: data/Items.csv
+[2026-01-05 23:41:27] Tasks file not found: src/data/Tasks.csv
+[2026-01-05 23:42:48] Users file not found: src/data/Users
+[2026-01-05 23:42:48] Items file not found: data/Items.csv
+[2026-01-05 23:42:48] Tasks file not found: src/data/Tasks.csv
+[2026-01-05 23:43:18] Users file not found: src/data/Users
+[2026-01-05 23:43:19] Items file not found: data/Items.csv
+[2026-01-05 23:43:19] Tasks file not found: src/data/Tasks.csv
+[2026-01-05 23:47:32] Users file not found: src/data/Users
+[2026-01-05 23:59:36] User not found: 
+[2026-01-06 00:04:04] User not found: 
+[2026-01-06 00:05:18] User not found: admin
+[2026-01-06 00:05:24] User not found: admin
+[2026-01-06 00:05:44] User not found: admin
+[2026-01-06 12:16:05] User not found: 
+[2026-01-06 21:47:41] Users file not found: data/Users.csv
+[2026-01-06 21:49:48] Users file not found: data/Users.csv
