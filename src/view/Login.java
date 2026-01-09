@@ -7,6 +7,7 @@ import model.Rule;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 public class Login extends JPanel {
@@ -50,16 +51,32 @@ public class Login extends JPanel {
         leftPanel.setBackground(industrialBlue);
 
         // Enforce exact width of 350px
-        leftPanel.setPreferredSize(new Dimension(350, 0));
-        leftPanel.setMinimumSize(new Dimension(350, 0));
-        leftPanel.setMaximumSize(new Dimension(350, Integer.MAX_VALUE));
+        leftPanel.setPreferredSize(new Dimension(300, 0));
+        leftPanel.setMinimumSize(new Dimension(300, 0));
+        leftPanel.setMaximumSize(new Dimension(300, Integer.MAX_VALUE));
 
-        // Centered logo
-        ImageIcon icon = new ImageIcon("assets/300px-logo.png");
-        JLabel iconLabel = new JLabel(icon);
-        iconLabel.setHorizontalAlignment(JLabel.CENTER);
-        iconLabel.setVerticalAlignment(JLabel.CENTER);
-        leftPanel.add(iconLabel, BorderLayout.CENTER);
+        JPanel logoBox = new JPanel();
+        logoBox.setLayout(new BoxLayout(logoBox, BoxLayout.Y_AXIS));
+        logoBox.setOpaque(false);
+
+        JLabel iconLabel = new JLabel(new ImageIcon("assets/300px-logo.png"));
+        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel factoryName = new JLabel("TWIZE FACTORY");
+        factoryName.setAlignmentX(Component.CENTER_ALIGNMENT);
+        factoryName.putClientProperty("FlatLaf.style", "font: bold 24 serif; foreground: #F7941D;");
+
+        logoBox.add(Box.createVerticalGlue());
+        logoBox.add(iconLabel);
+        logoBox.add(Box.createVerticalStrut(20));
+        logoBox.add(factoryName);
+        logoBox.add(Box.createVerticalGlue());
+
+        leftPanel.setLayout(new BorderLayout());
+        leftPanel.add(logoBox, BorderLayout.CENTER);
+
+
+
 
         // RIGHT PANEL with background image
         ImageIcon loginBackground = new ImageIcon("assets/login-background.jpg");
@@ -68,8 +85,7 @@ public class Login extends JPanel {
         // CARD PANEL (rounded container)
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setOpaque(true);
-        card.setBackground(cleanWhite);
+        card.setOpaque(false);
         card.setPreferredSize(new Dimension(400, 450));
         card.setBorder(new EmptyBorder(20, 30, 20, 30));
 
@@ -83,7 +99,10 @@ public class Login extends JPanel {
         usernameField.setMaximumSize(new Dimension(300, 40));
         usernameField.setOpaque(false); // makes background transparent
         usernameField.setForeground(industrialBlue); // text color
-        usernameField.setBorder(BorderFactory.createTitledBorder("Username"));
+        TitledBorder usernameBorder = BorderFactory.createTitledBorder("Username");
+        usernameBorder.setTitleFont(new Font("serif" ,Font.PLAIN,18));
+        usernameBorder.setTitleColor(industrialBlue); // Set the title color
+        usernameField.setBorder(usernameBorder);
 
 
 
@@ -91,12 +110,18 @@ public class Login extends JPanel {
         passwordField.setMaximumSize(new Dimension(300, 40));
         passwordField.setOpaque(false); // transparent background
         passwordField.setForeground(industrialBlue);
-        passwordField.setBorder(BorderFactory.createTitledBorder("Password"));
-
+        TitledBorder passwordBorder = BorderFactory.createTitledBorder("Password");
+        passwordBorder.setTitleFont(new Font("serif" ,Font.PLAIN,18));
+        passwordBorder.setTitleColor(industrialBlue); // Set the title color
+        passwordField.setBorder(passwordBorder);
 
         // Role checkboxes
         JCheckBox managerCheck = new JCheckBox("Manager");
+        managerCheck.setFont(new Font("serif" ,Font.PLAIN,12));
+        managerCheck.setForeground(industrialBlue);
         JCheckBox supervisorCheck = new JCheckBox("Production Supervisor");
+        supervisorCheck.setFont(new Font("serif" ,Font.PLAIN,12));
+        supervisorCheck.setForeground(industrialBlue);
         managerCheck.setOpaque(false);
         supervisorCheck.setOpaque(false);
 
@@ -115,19 +140,30 @@ public class Login extends JPanel {
         // Login button
         JButton loginButton = new JButton("Login");
         loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        loginButton.setMaximumSize(new Dimension(200, 120));
-        loginButton.setBackground(industrialBlue);
+        loginButton.setPreferredSize(new Dimension(200,35));
+        loginButton.setMaximumSize(new Dimension(200, 35));
+        loginButton.setMinimumSize(new Dimension(200,35));
+        loginButton.setBackground(activeOrange);
+        loginButton.putClientProperty("FlatLaf.style", ""
+                + "background: #F7941D;"
+                + "foreground: #FFFFFF;"
+                + "hoverBackground: #D97F17;"
+                + "pressedBackground: #B86612;"
+                + "arc: 20;"
+        );
+
+
 
 
         // Add components to card
         card.add(title);
-        card.add(Box.createVerticalStrut(50));
+        card.add(Box.createVerticalStrut(75));
         card.add(usernameField);
         card.add(Box.createVerticalStrut(20));
         card.add(passwordField);
         card.add(Box.createVerticalStrut(50));
         card.add(checkboxRow);
-        card.add(Box.createVerticalStrut(30));
+        card.add(Box.createVerticalStrut(50));
         card.add(loginButton);
 
         // Center card in right panel
@@ -149,23 +185,23 @@ public class Login extends JPanel {
         loginButton.addActionListener(e -> {
             String username = usernameField.getText().trim();
             String password = new String(passwordField.getPassword()).trim();
-
+            ImageIcon warning = new ImageIcon("assets/warning-orange.png");
             String role = null;
             if (managerCheck.isSelected()) role = "MANAGER";
             if (supervisorCheck.isSelected()) role = "PRODUCTION_SUPERVISOR";
 
             if (role == null) {
-                JOptionPane.showMessageDialog(frame, "Please select a role.", "Error", JOptionPane.ERROR_MESSAGE);
+
+                JOptionPane.showMessageDialog(frame, "Please select a role.", "Error", JOptionPane.ERROR_MESSAGE,warning);
                 return;
             }
 
             try {
                 UserController.login(username, password, Rule.valueOf(role));
-                JOptionPane.showMessageDialog(frame, "Login successful!");
             } catch (UserAlreadyLoggedInException | IllegalArgumentException ex) {
-                JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE,warning);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(frame, "Unexpected error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Unexpected error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE,warning);
             }
         });
     }
