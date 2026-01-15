@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="50f528bf-b920-4586-b26e-1e2c9d62a0a2" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/assets/Items-storage.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/Product-storage.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/add-orange.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/productionLines.gif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/model/Category.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/view/Storage.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/productLine.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/storage.gif" beforeDir="false" afterPath="$PROJECT_DIR$/assets/storage.gif" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/Items.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/Items.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/Products.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/Products.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/Users.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/Users.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/error.txt" beforeDir="false" afterPath="$PROJECT_DIR$/data/error.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controller/ItemController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/controller/ItemController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controller/MainController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/controller/MainController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/model/Item.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/model/Item.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/view/Login.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/view/Login.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/view/ManagerDashBoard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/view/DashBoard.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/view/ProductionSupervisor.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/view/UserInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/view/UserInfo.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Exception" />
+        <option value="Class" />
+        <option value="Enum" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;mohammadhammoud130&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/mohammadhammoud130/p3-assingment.git&quot;,
+    &quot;accountId&quot;: &quot;b30ac93f-4c7c-433f-abc0-5fdca3e421dc&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="36TPIgnCsl5ddXupN0AgEUcGpM1" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/mohammoud/projets/p3 project/P3 Project&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;onboarding.tips.debug.path&quot;: &quot;/home/mohammoud/Desktop/p3 project/P3 Project/src/Main.java&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/src" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.29346.138" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="50f528bf-b920-4586-b26e-1e2c9d62a0a2" name="Changes" comment="" />
+      <created>1765027510720</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1765027510720</updated>
+      <workItem from="1765027512075" duration="14584000" />
+      <workItem from="1765360008301" duration="900000" />
+      <workItem from="1765481775142" duration="4160000" />
+      <workItem from="1765569602541" duration="6167000" />
+      <workItem from="1765643908724" duration="3545000" />
+      <workItem from="1765717973317" duration="13656000" />
+      <workItem from="1767096815457" duration="3681000" />
+      <workItem from="1767173003703" duration="7775000" />
+      <workItem from="1767213097967" duration="574000" />
+      <workItem from="1767213732209" duration="7000" />
+      <workItem from="1767213799747" duration="3000" />
+      <workItem from="1767213839428" duration="6992000" />
+      <workItem from="1767434490520" duration="12431000" />
+      <workItem from="1767520273992" duration="3310000" />
+      <workItem from="1767596995960" duration="17943000" />
+      <workItem from="1767704261829" duration="3311000" />
+      <workItem from="1767735101943" duration="156000" />
+      <workItem from="1767735305418" duration="7562000" />
+      <workItem from="1767810356050" duration="7932000" />
+      <workItem from="1767859117700" duration="22930000" />
+      <workItem from="1767900685615" duration="1972000" />
+      <workItem from="1767944330005" duration="4516000" />
+      <workItem from="1767949657967" duration="9056000" />
+      <workItem from="1767992870824" duration="7459000" />
+      <workItem from="1768051267052" duration="121000" />
+      <workItem from="1768051403653" duration="3741000" />
+      <workItem from="1768068053127" duration="46000" />
+      <workItem from="1768068126178" duration="3658000" />
+      <workItem from="1768075050819" duration="278000" />
+      <workItem from="1768116345425" duration="1200000" />
+      <workItem from="1768206707746" duration="679000" />
+      <workItem from="1768381716704" duration="2813000" />
+      <workItem from="1768385806815" duration="494000" />
+      <workItem from="1768391774794" duration="1487000" />
+      <workItem from="1768407403942" duration="1103000" />
+      <workItem from="1768417992675" duration="4816000" />
+      <workItem from="1768485746521" duration="5745000" />
+      <workItem from="1768503124248" duration="1390000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$" />
+      <path value="$PROJECT_DIR$/src" />
+      <path value="$PROJECT_DIR$/" />
+    </ignored-roots>
+  </component>
+</project>

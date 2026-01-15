@@ -4,9 +4,8 @@ import com.sun.tools.javac.Main;
 import exception.UserAlreadyLoggedInException;
 import model.Rule;
 import model.User;
-import view.Login;
-import view.ManagerDashBoard;
-import view.ProductionSupervisor;
+import view.*;
+
 
 import java.io.*;
 import java.util.HashMap;
@@ -137,9 +136,9 @@ public class UserController {
         loggedInUsers.add(username);
         System.out.println("User logged in: " + username);
         if(user.getRule().equals(Rule.MANAGER)){
-            ManagerDashBoard.managerDashBoard(MainController.getFrame(),user.getUserName());
+            DashBoard.managerDashBoard(MainController.getFrame(),user.getUserName());
         }else if(user.getRule().equals(Rule.PRODUCTION_SUPERVISOR)){
-            ProductionSupervisor.productionSupervisor(MainController.getFrame(),user.getUserName());
+            DashBoard.productionSupervisorDashBoard(MainController.getFrame(),user.getUserName());
         }
     }
 

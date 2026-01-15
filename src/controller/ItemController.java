@@ -263,7 +263,7 @@ public class ItemController {
     public void searchItemByCategory(String category) {
         boolean found = false;
         for (Item item : items.values()) {
-            if (item.getCategory().equalsIgnoreCase(category)) {
+            if (item.getCategory().name().equalsIgnoreCase(category)) {
                 System.out.println(item);
                 found = true;
             }

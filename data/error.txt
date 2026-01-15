@@ -36,3 +36,18 @@
 [2026-01-09 14:31:17] Incorrect password for user: admin
 [2026-01-09 19:51:06] Incorrect password for user: admin
 [2026-01-09 20:35:46] Incorrect password for user: admin
+[2026-01-10 12:46:06] Incorrect rule for user: MANAGER
+[2026-01-10 12:46:13] User "mohammad" attempted to log in twice.
+[2026-01-10 12:47:02] User not found: mohamad
+[2026-01-10 12:47:10] User "mohammad" attempted to log in twice.
+[2026-01-10 13:00:23] Incorrect rule for user: PRODUCTION_SUPERVISOR
+[2026-01-12 11:32:08] Incorrect password for user: admin
+[2026-01-14 12:37:30] Incorrect password for user: admin
+[2026-01-15 17:19:27] Unexpected error parsing item line: 2,button,BUTTON,12,133,30
+[2026-01-15 17:19:27] Unexpected error parsing item line: 3,zipper,ZIPPER,14,125,35
+[2026-01-15 17:19:27] Unexpected error parsing item line: 4,leather,lEATHER,60,200,100
+[2026-01-15 17:20:58] Unexpected error parsing item line: 4,leather,lEATHER,60,200,100
+[2026-01-15 20:02:46] Referenced item ID 6 not found for product ID 3
+[2026-01-15 20:02:46] Referenced item ID 7 not found for product ID 4
+[2026-01-15 20:02:46] Referenced item ID 8 not found for product ID 5
+[2026-01-15 20:05:22] Incorrect password for user: admin

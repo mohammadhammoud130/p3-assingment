@@ -4,7 +4,7 @@ public class Item {
     private static int nextId = 1;
     private final int id;
     private String name;
-    private String category;
+private Category category;
     private int quantity;
     private int minThreshold;
     private double price;
@@ -13,7 +13,7 @@ public class Item {
     public Item(String name, String category, double price, int quantity, int minThreshold) {
         this.id = nextId++;
         this.name = name;
-        this.category = category;
+        this.category = Category.valueOf(category);
         this.price = price;
         this.quantity = quantity;
         this.minThreshold = minThreshold;
@@ -22,7 +22,7 @@ public class Item {
     public Item(int id, String name, String category, double price, int quantity, int minThreshold) {
         this.id = id;
         this.name = name;
-        this.category = category;
+        this.category = Category.valueOf(category);
         this.price = price;
         this.quantity = quantity;
         this.minThreshold = minThreshold;
@@ -48,13 +48,13 @@ public class Item {
         this.name = name;
     }
 
-    public String getCategory() { return category; }
+    public Category getCategory() { return category; }
 
     public void setCategory(String category) {
         if (category == null || category.trim().isEmpty()) {
             throw new IllegalArgumentException("Item category cannot be null or empty.");
         }
-        this.category = category;
+        this.category = Category.valueOf(category);
     }
 
     public double getPrice() { return price; }

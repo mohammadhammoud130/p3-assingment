@@ -2,7 +2,7 @@ package controller;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import view.Login;
-import view.ManagerDashBoard;
+import view.DashBoard;
 
 import javax.swing.*;
 import java.awt.*;

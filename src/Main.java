@@ -4,6 +4,7 @@ import view.*;
 import model.*;
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
 
 public class Main {
     public static JFrame frame;

@@ -1,1 +1,6 @@
 id,name,category,price,quantity,minThreshold
+1,silk,FABRIC,50.0,1400,40
+2,button,BUTTON,12.0,133,30
+3,zipper,ZIPPER,14.0,125,35
+4,leather,LEATHER,60.0,200,100
+5,thread,THREAD,20.0,1000,200

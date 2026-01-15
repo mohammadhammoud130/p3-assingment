@@ -13,7 +13,7 @@ import java.awt.*;
 public class Login extends JPanel {
 
     // Custom panel that paints a background image
-    static class BackgroundPanel extends JPanel {
+    private static class BackgroundPanel extends JPanel {
         private final Image background;
 
         public BackgroundPanel(ImageIcon icon) {
