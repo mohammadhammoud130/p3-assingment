@@ -1,5 +1,5 @@
 package model;
 
 public enum Status {
-    ACTIVE, PAUSED, FINISHED;
+    ACTIVE, PAUSED, FINISHED,MAINTENANCE;
 }

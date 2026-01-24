@@ -38,16 +38,17 @@ public class MainController {
         UserController.setUsers(UserController.loadUsers());
         ItemController.setItems(ItemController.itemsLoader());
         ProductController.setProducts(ProductController.productsLoader());
-        TaskController.setTasks(TaskController.tasksLoader());
         ProductLineController.setProductLines(ProductLineController.productLinesLoader());
+        TaskController.setTasks(TaskController.tasksLoader());
+        TaskRunner.start();
     }
 
     public static int filesUpdater() {
         UserController.updateUsersFile();
         ItemController.updateItemsFile();
         ProductController.updateProductsFile();
-        TaskController.updateTasksFile();
         ProductLineController.updateProductLinesFile();
+        TaskController.updateTasksFile();
         return JFrame.EXIT_ON_CLOSE;
     }
     public static JFrame getFrame() {

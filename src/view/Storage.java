@@ -1,6 +1,7 @@
 package view;
 
 import controller.ItemController;
+import controller.ProductController;
 import model.Item;
 import model.Product;
 
@@ -15,18 +16,26 @@ public class Storage {
 
     private static final Color industrialBlue = new Color(0x024971);
     private static final Color activeOrange = new Color(0xF7941D);
+    private static final Color cleanWhite = Color.WHITE;
 
-    // ---------------- Custom Components ----------------
+    // --- Custom Components ---
 
-    // 1. Panel for Item Cards (with Background Image & Rounded Corners)
     static class BackgroundPanel extends JPanel {
         private final Image background;
         private final int arc = 30;
+        private Color overlayColor = new Color(0, 0, 0, 140); // Default dark overlay
 
         public BackgroundPanel(ImageIcon icon) {
             this.background = (icon != null) ? icon.getImage() : null;
-            setLayout(null); // Use NULL layout for custom positioning if needed, or GridBag
+            setLayout(new BorderLayout());
             setOpaque(false);
+            setBorder(new EmptyBorder(15, 20, 15, 20)); // Padding inside the card
+        }
+
+        // Allow changing overlay color (e.g. for Add button)
+        public void setOverlayColor(Color c) {
+            this.overlayColor = c;
+            repaint();
         }
 
         @Override
@@ -39,12 +48,13 @@ public class Storage {
             g2.setClip(roundedRect);
 
             if (background != null) {
+                // Draw Image
                 g2.drawImage(background, 0, 0, getWidth(), getHeight(), this);
-                // Dark Overlay for text readability
-                g2.setColor(new Color(0, 0, 0, 80));
+
+                // Draw Overlay INSIDE the clip
+                g2.setColor(overlayColor);
                 g2.fill(roundedRect);
             } else {
-                // Fallback for solid color (used for Add Button if needed)
                 g2.setColor(industrialBlue);
                 g2.fill(roundedRect);
             }
@@ -54,159 +64,115 @@ public class Storage {
         }
     }
 
-    // 2. Main Background GIF Panel
     static class GifPanel extends JPanel {
         private final Image gifImage;
-
         public GifPanel(String path) {
             this.gifImage = new ImageIcon(path).getImage();
             setLayout(new BorderLayout());
         }
-
-        @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            if (gifImage != null) {
-                g.drawImage(gifImage, 0, 0, getWidth(), getHeight(), this);
-            }
+            if (gifImage != null) g.drawImage(gifImage, 0, 0, getWidth(), getHeight(), this);
         }
     }
 
-    // 3. Menu Button Panel
     static class RoundedImagePanel extends JPanel {
         private final Image image;
-        private final int arc = 40;
-
         public RoundedImagePanel(String imagePath) {
             this.image = new ImageIcon(imagePath).getImage();
             setOpaque(false);
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         }
-
-        @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            int w = getWidth();
-            int h = getHeight();
-
-            RoundRectangle2D roundedRect = new RoundRectangle2D.Float(0, 0, w, h, arc, arc);
-            g2.setClip(roundedRect);
-
-            g2.drawImage(image, 0, 0, w, h, this);
-
+            g2.setClip(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 40, 40));
+            g2.drawImage(image, 0, 0, getWidth(), getHeight(), this);
             g2.dispose();
             super.paintComponent(g);
         }
     }
 
-    // ---------------- Main Logic ----------------
+    // --- Main View ---
 
     public static void storage(JFrame frame, JPanel leftPanel) {
-
-        // 1. Root Container (GIF Background)
         GifPanel rootPanel = new GifPanel("assets/storage.gif");
-
-        // 2. Left Menu (WEST)
         JPanel westContainer = new JPanel(new BorderLayout());
         westContainer.setOpaque(false);
         westContainer.add(leftPanel, BorderLayout.CENTER);
         rootPanel.add(westContainer, BorderLayout.WEST);
 
-        // 3. Center Content (CardLayout)
         JPanel contentPanel = new JPanel(new CardLayout());
         contentPanel.setOpaque(false);
 
-        // ---------------- Views Setup ----------------
-
-        // View A: The Menu (Two Buttons)
         JPanel menuPanel = new JPanel(new GridBagLayout());
         menuPanel.setOpaque(false);
-
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 20, 0, 20);
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
 
-        Dimension buttonSize = new Dimension(550, 850);
-
         RoundedImagePanel productBtn = new RoundedImagePanel("assets/Product-storage.jpg");
-        productBtn.setPreferredSize(buttonSize);
+        productBtn.setPreferredSize(new Dimension(550, 850));
         productBtn.addMouseListener(new MouseAdapter() {
-            @Override
             public void mouseClicked(MouseEvent e) {
-                CardLayout cl = (CardLayout) contentPanel.getLayout();
-                cl.show(contentPanel, "PRODUCT_VIEW");
+                ((CardLayout) contentPanel.getLayout()).show(contentPanel, "PRODUCT_VIEW");
             }
         });
 
         RoundedImagePanel itemBtn = new RoundedImagePanel("assets/Items-storage.jpg");
-        itemBtn.setPreferredSize(buttonSize);
+        itemBtn.setPreferredSize(new Dimension(550, 850));
         itemBtn.addMouseListener(new MouseAdapter() {
-            @Override
             public void mouseClicked(MouseEvent e) {
-                CardLayout cl = (CardLayout) contentPanel.getLayout();
-                cl.show(contentPanel, "ITEM_VIEW");
+                ((CardLayout) contentPanel.getLayout()).show(contentPanel, "ITEM_VIEW");
             }
         });
 
         menuPanel.add(productBtn, gbc);
         menuPanel.add(itemBtn, gbc);
 
-        // Add Views
         contentPanel.add(menuPanel, "MENU");
         contentPanel.add(ProductView(contentPanel), "PRODUCT_VIEW");
         contentPanel.add(ItemView(contentPanel), "ITEM_VIEW");
 
         rootPanel.add(contentPanel, BorderLayout.CENTER);
-
         frame.setContentPane(rootPanel);
         frame.revalidate();
         frame.repaint();
     }
 
-    // ---------------- Sub-Window Generators ----------------
-
     private static JPanel ProductView(JPanel container) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
 
-        // --- 1. Products Grid Container (Grid Layout 3 Columns) ---
         JPanel productsGrid = new JPanel(new GridLayout(0, 3, 30, 40));
         productsGrid.setOpaque(false);
         productsGrid.setBorder(new EmptyBorder(30, 30, 30, 30));
 
-        // --- 2. Populate Grid from Controller ---
-        // Assuming ProductController exists and has getProducts()
-        if (controller.ProductController.getProducts() != null) {
-            for (model.Product product : controller.ProductController.getProducts().values()) {
-                productsGrid.add(createProductPanel(product));
+        if (ProductController.getProducts() != null) {
+            for (Product product : ProductController.getProducts().values()) {
+                productsGrid.add(createProductPanel(product, productsGrid));
             }
         }
 
-        // --- 3. Add "Add Product" Card at the end ---
+        // Add Card
         BackgroundPanel addCard = new BackgroundPanel(new ImageIcon("assets/product.png"));
-        addCard.setOpaque(false);
         addCard.setPreferredSize(new Dimension(400, 255));
         addCard.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        addCard.setLayout(new GridBagLayout()); // Center the icon
+        addCard.setOverlayColor(new Color(0, 0, 0, 80)); // Lighter overlay for add card if desired
 
-        JLabel plusLabel = new JLabel(new ImageIcon("assets/add-orange.png"));
-        plusLabel.setPreferredSize(new Dimension(32, 32));
-        addCard.add(plusLabel);
+        // Use GridBag to center the plus icon
+        addCard.setLayout(new GridBagLayout());
+        addCard.add(new JLabel(new ImageIcon("assets/add-orange.png")));
 
         addCard.addMouseListener(new MouseAdapter() {
-            @Override
             public void mouseClicked(MouseEvent e) {
-                JOptionPane.showMessageDialog(null, "Add Product Functionality");
+                AddProduct.show();
             }
         });
-
         productsGrid.add(addCard);
 
-        // --- 4. Scroll Pane (Transparent) ---
         JPanel gridWrapper = new JPanel(new BorderLayout());
         gridWrapper.setOpaque(false);
         gridWrapper.add(productsGrid, BorderLayout.NORTH);
@@ -219,11 +185,11 @@ public class Storage {
 
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // --- 5. Bottom Bar (Back Button) ---
         JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottomBar.setOpaque(false);
-        JButton backBtn = createBackButton(container);
-        bottomBar.add(backBtn);
+        bottomBar.setOpaque(true);
+        bottomBar.setBackground(industrialBlue);
+        bottomBar.setBorder(new EmptyBorder(10, 20, 10, 20));
+        bottomBar.add(createBackButton(container));
 
         panel.add(bottomBar, BorderLayout.SOUTH);
 
@@ -234,41 +200,30 @@ public class Storage {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
 
-        // --- 1. Items Grid Container (Grid Layout 3 Columns) ---
-        // Using standard JPanel for grid, ensuring background is transparent to see GIF
         JPanel itemsGrid = new JPanel(new GridLayout(0, 3, 30, 40));
-        itemsGrid.setOpaque(false); // Transparent
+        itemsGrid.setOpaque(false);
         itemsGrid.setBorder(new EmptyBorder(30, 30, 30, 30));
 
-        // --- 2. Populate Grid from Controller ---
         if (ItemController.getItems() != null) {
             for (Item item : ItemController.getItems().values()) {
-                itemsGrid.add(createItemPanel(item));
+                itemsGrid.add(createItemPanel(item, itemsGrid));
             }
         }
 
-        // --- 3. Add "Add Item" Card at the end ---
         BackgroundPanel addCard = new BackgroundPanel(new ImageIcon("assets/default-item.png"));
-        addCard.setOpaque(false);
         addCard.setPreferredSize(new Dimension(400, 255));
         addCard.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        addCard.setLayout(new GridBagLayout()); // Center the icon
 
-        JLabel plusLabel = new JLabel(new ImageIcon("assets/add-orange.png"));
-        plusLabel.setPreferredSize(new Dimension(32, 32));
-        addCard.add(plusLabel);
+        addCard.setLayout(new GridBagLayout());
+        addCard.add(new JLabel(new ImageIcon("assets/add-orange.png")));
 
         addCard.addMouseListener(new MouseAdapter() {
-            @Override
             public void mouseClicked(MouseEvent e) {
-                JOptionPane.showMessageDialog(null, "Add Item Functionality");
+                AddItem.show();
             }
         });
-
         itemsGrid.add(addCard);
 
-        // --- 4. Scroll Pane (Transparent) ---
-        // We wrap the grid in a panel that aligns it to the top (North) to prevent vertical stretching
         JPanel gridWrapper = new JPanel(new BorderLayout());
         gridWrapper.setOpaque(false);
         gridWrapper.add(itemsGrid, BorderLayout.NORTH);
@@ -281,11 +236,11 @@ public class Storage {
 
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // --- 5. Bottom Bar (Back Button) ---
         JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottomBar.setOpaque(false);
-        JButton backBtn = createBackButton(container);
-        bottomBar.add(backBtn);
+        bottomBar.setOpaque(true);
+        bottomBar.setBackground(industrialBlue);
+        bottomBar.setBorder(new EmptyBorder(10, 20, 10, 20));
+        bottomBar.add(createBackButton(container));
 
         panel.add(bottomBar, BorderLayout.SOUTH);
 
@@ -293,167 +248,272 @@ public class Storage {
     }
 
     private static JButton createBackButton(JPanel container) {
-        JButton backBtn = new JButton();
-        backBtn.setPreferredSize(new Dimension(32, 32));
-        backBtn.setIcon(new ImageIcon("assets/back.png"));
+        JButton backBtn = new JButton(new ImageIcon("assets/back.png"));
         backBtn.setContentAreaFilled(false);
         backBtn.setBorderPainted(false);
-        backBtn.setFocusPainted(false);
         backBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        backBtn.addActionListener(e -> {
-            CardLayout cl = (CardLayout) container.getLayout();
-            cl.show(container, "MENU");
-        });
+        backBtn.addActionListener(e -> ((CardLayout) container.getLayout()).show(container, "MENU"));
         return backBtn;
     }
 
-    private static BackgroundPanel createItemPanel(Item item) {
-        // --- Background Logic ---
-        ImageIcon bg;
+    private static BackgroundPanel createItemPanel(Item item, JPanel parentGrid) {
+        ImageIcon bg = new ImageIcon("assets/default-item.png");
         if (item.getCategory() != null) {
-            switch (item.getCategory().name().toLowerCase()) {
-                case "fabric":  bg = new ImageIcon("assets/fabric.png"); break;
-                case "thread":  bg = new ImageIcon("assets/threads.png"); break;
-                case "leather": bg = new ImageIcon("assets/leather.png"); break;
-                case "buttons", "zippers": bg = new ImageIcon("assets/bottons-zippers.png"); break;
-                default:        bg = new ImageIcon("assets/default-item.png");
-            }
-        } else {
-            bg = new ImageIcon("assets/default-item.png");
+            String cat = item.getCategory().name().toLowerCase();
+            if (cat.contains("fabric")) bg = new ImageIcon("assets/fabric.png");
+            else if (cat.contains("thread")) bg = new ImageIcon("assets/threads.png");
+            else if (cat.contains("leather")) bg = new ImageIcon("assets/leather.png");
+            else if (cat.contains("button") || cat.contains("zipper")) bg = new ImageIcon("assets/bottons-zippers.png");
         }
-
-        // --- Panel Setup ---
         BackgroundPanel panel = new BackgroundPanel(bg);
-        panel.setLayout(new GridBagLayout()); // Use GridBag to position text
+        panel.setPreferredSize(new Dimension(400, 255));
 
-        Dimension cardSize = new Dimension(400, 255);
-        panel.setPreferredSize(cardSize);
-        panel.setMinimumSize(cardSize);
-        panel.setMaximumSize(cardSize);
+        // Remove the inner overlay panel, use the BackgroundPanel itself
+        panel.setLayout(new BorderLayout());
 
-        // --- Labels (White Text for Contrast) ---
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 10, 5, 10);
-        gbc.anchor = GridBagConstraints.WEST;
+        // --- Top: Delete Button ---
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        topPanel.setOpaque(false);
+        JButton deleteBtn = new JButton(new ImageIcon("assets/delete.png"));
+        deleteBtn.setContentAreaFilled(false);
+        deleteBtn.setBorderPainted(false);
+        deleteBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        deleteBtn.addActionListener(e -> {
+            if (JOptionPane.showConfirmDialog(null, "Delete " + item.getName() + "?", "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                ItemController controller = new ItemController();
+                controller.deleteItemById(item.getId());
+                ItemController.updateItemsFile();
+                parentGrid.remove(panel);
+                parentGrid.revalidate();
+                parentGrid.repaint();
+            }
+        });
+        topPanel.add(deleteBtn);
+
+        // --- Center: Info ---
+        JPanel centerPanel = new JPanel();
+        centerPanel.setOpaque(false);
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        Font labelFont = new Font("SansSerif", Font.BOLD, 18);
+        Font valFont = new Font("SansSerif", Font.PLAIN, 16);
+
+        JLabel nameLabel = new JLabel(item.getName());
+        nameLabel.setFont(labelFont);
+        nameLabel.setForeground(activeOrange);
 
         JLabel idLabel = new JLabel("ID: " + item.getId());
-        JLabel nameLabel = new JLabel("Name: " + item.getName());
+        idLabel.setFont(valFont);
+        idLabel.setForeground(cleanWhite);
+
         JLabel qtyLabel = new JLabel("Qty: " + item.getQuantity());
+        qtyLabel.setFont(valFont);
+        qtyLabel.setForeground(cleanWhite);
+
         JLabel minLabel = new JLabel("Min: " + item.getMinThreshold());
+        minLabel.setFont(valFont);
+        minLabel.setForeground(cleanWhite);
 
-        Font font = new Font("SansSerif", Font.BOLD, 14);
-        Color textColor = Color.WHITE;
+        centerPanel.add(nameLabel);
+        centerPanel.add(Box.createVerticalStrut(8));
+        centerPanel.add(idLabel);
+        centerPanel.add(Box.createVerticalStrut(5));
+        centerPanel.add(qtyLabel);
+        centerPanel.add(Box.createVerticalStrut(5));
+        centerPanel.add(minLabel);
 
-        idLabel.setFont(font); idLabel.setForeground(textColor);
-        nameLabel.setFont(font); nameLabel.setForeground(textColor);
-        qtyLabel.setFont(font); qtyLabel.setForeground(textColor);
-        minLabel.setFont(font); minLabel.setForeground(textColor);
+        // --- Bottom: Edit Button ---
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        bottomPanel.setOpaque(false);
+        JButton editBtn = new JButton(new ImageIcon("assets/edit.png"));
+        editBtn.setContentAreaFilled(false);
+        editBtn.setBorderPainted(false);
+        editBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        editBtn.addActionListener(e -> showEditItemPopup(item, qtyLabel));
+        bottomPanel.add(editBtn);
 
-        gbc.gridy = 0; panel.add(idLabel, gbc);
-        gbc.gridy = 1; panel.add(nameLabel, gbc);
-        gbc.gridy = 2; panel.add(qtyLabel, gbc);
-        gbc.gridy = 3; panel.add(minLabel, gbc);
+        panel.add(topPanel, BorderLayout.NORTH);
+        panel.add(centerPanel, BorderLayout.CENTER);
+        panel.add(bottomPanel, BorderLayout.SOUTH);
 
         return panel;
     }
 
-    private static BackgroundPanel createProductPanel(model.Product product) {
-        // --- Panel Setup ---
+    private static BackgroundPanel createProductPanel(model.Product product, JPanel parentGrid) {
         BackgroundPanel panel = new BackgroundPanel(new ImageIcon("assets/product.png"));
-        panel.setLayout(new GridBagLayout());
+        panel.setPreferredSize(new Dimension(400, 255));
+        panel.setLayout(new BorderLayout());
 
-        Dimension cardSize = new Dimension(400, 255);
-        panel.setPreferredSize(cardSize);
-        panel.setMinimumSize(cardSize);
-        panel.setMaximumSize(cardSize);
+        // --- Top: Delete Button ---
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        topPanel.setOpaque(false);
+        JButton deleteBtn = new JButton(new ImageIcon("assets/delete.png"));
+        deleteBtn.setContentAreaFilled(false);
+        deleteBtn.setBorderPainted(false);
+        deleteBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        deleteBtn.addActionListener(e -> {
+            if (JOptionPane.showConfirmDialog(null, "Delete " + product.getName() + "?", "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                ProductController.getProducts().remove(product.getId());
+                ProductController.updateProductsFile();
+                parentGrid.remove(panel);
+                parentGrid.revalidate();
+                parentGrid.repaint();
+            }
+        });
+        topPanel.add(deleteBtn);
 
-        // --- Labels ---
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 10, 5, 10);
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridx = 0; // Column 0
+        // --- Center: Info ---
+        JPanel centerPanel = new JPanel();
+        centerPanel.setOpaque(false);
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        Font font = new Font("SansSerif", Font.BOLD, 14);
-        Color textColor = Color.WHITE;
+        Font labelFont = new Font("SansSerif", Font.BOLD, 18);
+        Font valFont = new Font("SansSerif", Font.PLAIN, 16);
+
+        JLabel nameLabel = new JLabel(product.getName());
+        nameLabel.setFont(labelFont);
+        nameLabel.setForeground(activeOrange);
 
         JLabel idLabel = new JLabel("ID: " + product.getId());
-        JLabel nameLabel = new JLabel("Name: " + product.getName());
-        JLabel timeLabel = new JLabel("Est. Time: " + product.getEstimatedTime() + "h");
+        idLabel.setFont(valFont);
+        idLabel.setForeground(cleanWhite);
 
-        idLabel.setFont(font); idLabel.setForeground(textColor);
-        nameLabel.setFont(font); nameLabel.setForeground(textColor);
-        timeLabel.setFont(font); timeLabel.setForeground(textColor);
+        JLabel timeLabel = new JLabel("Est. Time: " + product.getEstimatedTime() + "min");
+        timeLabel.setFont(valFont);
+        timeLabel.setForeground(cleanWhite);
 
-        gbc.gridy = 0; panel.add(idLabel, gbc);
-        gbc.gridy = 1; panel.add(nameLabel, gbc);
-        gbc.gridy = 2; panel.add(timeLabel, gbc);
 
-        // --- View Requirements Button ---
+        centerPanel.add(nameLabel);
+        centerPanel.add(Box.createVerticalStrut(8));
+        centerPanel.add(idLabel);
+        centerPanel.add(Box.createVerticalStrut(5));
+        centerPanel.add(timeLabel);
+
+        // --- Bottom: Requirements Button ---
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        bottomPanel.setOpaque(false);
         JButton reqBtn = new JButton("View Requirements");
         reqBtn.setFocusPainted(false);
-        reqBtn.setBackground(activeOrange); // Orange Theme
-        reqBtn.setForeground(Color.WHITE);
+        reqBtn.setBackground(activeOrange);
+        reqBtn.setForeground(cleanWhite);
         reqBtn.setFont(new Font("SansSerif", Font.BOLD, 12));
         reqBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
         reqBtn.addActionListener(e -> showRequirementsPopup(product));
+        bottomPanel.add(reqBtn);
 
-        gbc.gridy = 3;
-        gbc.insets = new Insets(15, 10, 5, 10); // Extra top gap
-        panel.add(reqBtn, gbc);
+        panel.add(topPanel, BorderLayout.NORTH);
+        panel.add(centerPanel, BorderLayout.CENTER);
+        panel.add(bottomPanel, BorderLayout.SOUTH);
 
         return panel;
     }
 
-    private static void showRequirementsPopup(model.Product product) {
+    private static void showEditItemPopup(Item item, JLabel qtyLabel) {
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Edit Stock: " + item.getName());
+        dialog.setSize(350, 220);
+        dialog.setLocationRelativeTo(null);
+        dialog.setModal(true);
+
+        JPanel content = new JPanel();
+        content.setBackground(industrialBlue);
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JTextField qtyField = new JTextField();
+        qtyField.setMaximumSize(new Dimension(300, 35));
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        btnPanel.setOpaque(false);
+        JButton addBtn = new JButton("Add (+)");
+        JButton removeBtn = new JButton("Remove (-)");
+
+        for(JButton b : new JButton[]{addBtn, removeBtn}) {
+            b.setBackground(activeOrange);
+            b.setForeground(cleanWhite);
+            b.setFocusPainted(false);
+            btnPanel.add(b);
+        }
+
+        addBtn.addActionListener(e -> updateQty(item, qtyField, qtyLabel, true, dialog));
+        removeBtn.addActionListener(e -> updateQty(item, qtyField, qtyLabel, false, dialog));
+
+        JLabel title = new JLabel("Update Stock Quantity");
+        title.setForeground(cleanWhite);
+        title.setFont(new Font("SansSerif", Font.BOLD, 16));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        content.add(title);
+        content.add(Box.createVerticalStrut(10));
+        content.add(qtyField);
+        content.add(Box.createVerticalStrut(10));
+        content.add(btnPanel);
+        dialog.setContentPane(content);
+        dialog.setVisible(true);
+    }
+
+    private static void updateQty(Item item, JTextField field, JLabel label, boolean add, JDialog dialog) {
+        try {
+            int val = Integer.parseInt(field.getText().trim());
+            ItemController.updateItemQTY(item.getId(), val, add);
+            label.setText("Qty: " + item.getQuantity());
+            dialog.dispose();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(dialog, "Invalid number", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private static void showRequirementsPopup(Product product) {
         JDialog dialog = new JDialog();
         dialog.setTitle("Requirements for: " + product.getName());
         dialog.setSize(600, 338);
-        dialog.setResizable(false);
-        dialog.setLocationRelativeTo(null); // Center on screen
-        dialog.setModal(true); // Block other windows until closed
+        dialog.setLocationRelativeTo(null);
+
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(new Color(0, 45, 64));
-        // Use standard BackgroundPanel with default item background
+        panel.setBackground(industrialBlue);
+
         BackgroundPanel content = new BackgroundPanel(new ImageIcon("assets/default-item.png"));
         content.setLayout(new GridBagLayout());
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 10, 5, 10);
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
+        JPanel glassLayer = new JPanel(new GridBagLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(0, 0, 0, 180));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        glassLayer.setOpaque(false);
+        glassLayer.setBorder(new EmptyBorder(20, 40, 20, 40));
 
-        // Title
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.CENTER; gbc.insets = new Insets(5, 0, 5, 0);
+
         JLabel title = new JLabel("Required Materials:");
-        title.setFont(new Font("SansSerif", Font.BOLD, 18));
-        title.setForeground(Color.WHITE);
-        content.add(title, gbc);
+        title.setFont(new Font("SansSerif", Font.BOLD, 22));
+        title.setForeground(activeOrange);
+        glassLayer.add(title, gbc);
+
+        gbc.gridy++;
+        glassLayer.add(Box.createVerticalStrut(10), gbc);
         gbc.gridy++;
 
-        // List Items
-        if (product.getRequiredItems().isEmpty()) {
-            JLabel empty = new JLabel("(No requirements listed)");
-            empty.setForeground(Color.WHITE);
-            content.add(empty, gbc);
-        } else {
-            for (java.util.Map.Entry<model.Item, Integer> entry : product.getRequiredItems().entrySet()) {
-                String itemName = entry.getKey().getName();
-                Integer qty = entry.getValue();
-
-                JLabel itemLabel = new JLabel("• " + itemName + ": " + qty);
-                itemLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
-                itemLabel.setForeground(Color.WHITE);
-                content.add(itemLabel, gbc);
-                gbc.gridy++;
-            }
+        for (java.util.Map.Entry<model.Item, Integer> entry : product.getRequiredItems().entrySet()) {
+            JLabel itemLabel = new JLabel("• " + entry.getKey().getName() + ": " + entry.getValue());
+            itemLabel.setFont(new Font("SansSerif", Font.PLAIN, 18));
+            itemLabel.setForeground(cleanWhite);
+            glassLayer.add(itemLabel, gbc);
+            gbc.gridy++;
         }
+
+        content.add(glassLayer);
         panel.add(content);
         dialog.setContentPane(panel);
         dialog.setVisible(true);
     }
-
-
-
 }

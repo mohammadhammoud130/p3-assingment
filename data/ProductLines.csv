@@ -1,1 +1,6 @@
-id,name,status,tasks
+id,name,status
+1,Fabric Line,ACTIVE
+2,Denim Line,ACTIVE
+3,Accessories Line,PAUSED
+4,Outerwear Line,MAINTENANCE
+5,T-Shirts,MAINTENANCE

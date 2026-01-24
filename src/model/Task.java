@@ -10,6 +10,7 @@ public class Task {
     private final int id;            // unique per instance
     private Product requiredProduct;
     private int requiredQuantity;
+    private int producedQuantity;
     private String client;
     private LocalDate startDate;
     private LocalDate deliveryDate;
@@ -18,14 +19,26 @@ public class Task {
     private ProductLine assignedLine;
 
     // Default constructor
-    public Task() {
-        this.id = nextId++;
+
+    public Task(int id, Product requiredProduct, int requiredQuantity, int producedQuantity,
+                String client, LocalDate startDate, LocalDate deliveryDate,
+                String status, ProductLine assignedLine) {
+        this.id = id;
+        this.requiredProduct = requiredProduct;
+        this.requiredQuantity = requiredQuantity;
+        this.producedQuantity = producedQuantity;
+        this.client = client;
+        this.startDate = startDate;
+        this.deliveryDate = deliveryDate;
+        this.status = Status.valueOf(status);
+        this.progress = producedQuantity * 100.0 / requiredQuantity;
+        this.assignedLine = assignedLine;
     }
 
     // Constructor with validation
     public Task(Product requiredProduct, int requiredQuantity, String client,
                 LocalDate startDate, LocalDate deliveryDate,
-                Status status, double progress, ProductLine assignedLine) {
+                String status, ProductLine assignedLine) {
 
         if (requiredProduct == null) {
             throw new IllegalArgumentException("Required product cannot be null.");
@@ -42,24 +55,16 @@ public class Task {
         if (deliveryDate.isBefore(startDate)) {
             throw new IllegalArgumentException("Delivery date cannot be before start date.");
         }
-        if (status == null ||
-             (!status.name().trim().equalsIgnoreCase("ACTIVE") &&
-              !status.name().trim().equalsIgnoreCase("PAUSED") &&
-              !status.name().trim().equalsIgnoreCase("FINISHED"))){
-            throw new IllegalArgumentException("Invalid status: " + status);
-        }
-        if (progress < 0 || progress > 100) {
-            throw new IllegalArgumentException("Progress must be between 0 and 100.");
-        }
 
         this.id = nextId++;
         this.requiredProduct = requiredProduct;
         this.requiredQuantity = requiredQuantity;
+        this.producedQuantity = 0;
         this.client = client;
         this.startDate = startDate;
         this.deliveryDate = deliveryDate;
-        this.status = status;
-        this.progress = progress;
+        this.status = Status.valueOf(status);
+        this.progress = 0;
         this.assignedLine = assignedLine;
     }
 
@@ -141,4 +146,17 @@ public class Task {
     public ProductLine getAssignedLine() { return assignedLine; }
 
     public void setAssignedLine(ProductLine assignedLine) { this.assignedLine = assignedLine; }
+
+    public int getProducedQuantity() {
+        return producedQuantity;
+    }
+
+    public void setProducedQuantity(int producedQuantity) {
+        this.producedQuantity = producedQuantity;
+        setProgress(producedQuantity * 100.0 / requiredQuantity);
+    }
+
+    public Product getRequiredProduct() {
+        return requiredProduct;
+    }
 }

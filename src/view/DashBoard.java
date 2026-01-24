@@ -91,6 +91,9 @@ public class DashBoard extends JPanel{
         inventory.addActionListener(e ->{
             Storage.storage(frame , leftPanel);
         });
+        productionLines.addActionListener(e->{
+            ProductionLines.showProductionLines(frame,leftPanel);
+        });
 
         frame.setContentPane(panel);
         frame.revalidate();
@@ -177,11 +180,19 @@ public class DashBoard extends JPanel{
         inventory.addActionListener(e ->{
             Storage.storage(frame , leftPanel);
         });
+        productionLines.addActionListener(e ->{
+            ProductionLines.showProductionLines(frame,leftPanel);
+        });
+        orders.addActionListener(e->{
+            TaskView.showAllTasks(frame,leftPanel);
+                }
+                );
 
         frame.setContentPane(panel);
         frame.revalidate();
         frame.repaint();
     }
+
     private static class SideButton extends JButton {
         public SideButton(String text) {
             this(text, null);
@@ -216,6 +227,7 @@ public class DashBoard extends JPanel{
             );
         }
     }
+
     public static JPanel getLeftPanel(){
         return leftPanel;
     }
