@@ -120,11 +120,8 @@ public class ProductionLines {
         deleteBtn.addActionListener(e -> {
             int choice1 = JOptionPane.showConfirmDialog(null, "Delete this Production Line?", "Confirm", JOptionPane.YES_NO_OPTION);
             if (choice1 == JOptionPane.YES_OPTION) {
-                int choice2 = JOptionPane.showConfirmDialog(null, "Are you sure?", "Final", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (choice2 == JOptionPane.YES_OPTION) {
-                    ProductLineController.deleteProductLine(line.getId());
-                    showProductionLines(frame, leftPanel);
-                }
+                ProductLineController.deleteProductLine(line.getId());
+                showProductionLines(frame, leftPanel);
             }
         });
         topPanel.add(deleteBtn);

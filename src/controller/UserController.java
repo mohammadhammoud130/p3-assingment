@@ -85,28 +85,48 @@ public class UserController {
 
     }
 
-    public static void addUser(User user){
-        if(users.containsKey(user.getUserName())){
-            System.err.println(user.getUserName()+" username is already taken");
-            ErrorLogger.logWarning(user.getUserName()+" username is already taken");
-            return;
+    public static boolean addUser(User user) {
+        if (users.containsKey(user.getUserName())) {
+            String msg = user.getUserName() + " username is already taken";
+            System.err.println(msg);
+            ErrorLogger.logWarning(msg);
+            return false; // Indicate failure
         }
-        users.put(user.getUserName(),user);
-        try (BufferedWriter userAdder = new BufferedWriter(new FileWriter(usersFilePath,true))){
-            userAdder.write(user.getUserName()+','+
-                                user.getPassword()+','+
-                                user.getRule().name()+"\n");
-        }catch (FileNotFoundException e){
+
+        users.put(user.getUserName(), user);
+
+        try (BufferedWriter userAdder = new BufferedWriter(new FileWriter(usersFilePath, true))) {
+            // Note: Removed the extra '\n' at end of write line if your reader handles lines properly,
+            // but keeping it consistent with your style. Better to use newLine().
+            userAdder.write(user.getUserName() + "," +
+                    user.getPassword() + "," +
+                    user.getRule().name());
+            userAdder.newLine(); // Use newLine() for cross-platform compatibility
+            return true; // Indicate success
+
+        } catch (FileNotFoundException e) {
             System.err.println("Users file not found when writing: " + usersFilePath);
             ErrorLogger.logWarning("Users file not found when writing: " + usersFilePath);
-        }catch (SecurityException e) {
+        } catch (SecurityException e) {
             System.err.println("No permission to write users file: " + usersFilePath);
             ErrorLogger.logWarning("No permission to write users file: " + usersFilePath);
         } catch (IOException e) {
             System.err.println("Error writing users file: " + e.getMessage());
             ErrorLogger.logWarning("Error writing users file: " + e.getMessage());
         }
+        return false; // IO Error failure
     }
+
+    public static void deleteUser(String username) {
+        if (users.containsKey(username)) {
+            users.remove(username);
+            updateUsersFile(); // Re-writes the CSV without the deleted user
+            System.out.println("User deleted: " + username);
+        } else {
+            System.err.println("User not found: " + username);
+        }
+    }
+
 
     public static void login(String username, String password,Rule rule) {
         User user = users.get(username);

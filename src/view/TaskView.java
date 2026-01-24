@@ -106,12 +106,7 @@ public class TaskView {
                     "Confirm Delete", JOptionPane.YES_NO_OPTION);
 
             if (choice1 == JOptionPane.YES_OPTION) {
-                int choice2 = JOptionPane.showConfirmDialog(null,
-                        "Are you sure? This cannot be undone.",
-                        "Final Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (choice2 == JOptionPane.YES_OPTION) {
-                    TaskController.deleteTask(task.getId());
-                }
+                TaskController.deleteTask(task.getId());
             }
         });
 

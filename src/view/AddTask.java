@@ -14,13 +14,10 @@ import java.time.format.DateTimeParseException;
 
 public class AddTask {
 
-    // --- Colors ---
     private static final Color INDUSTRIAL_BLUE = new Color(0, 74, 124);
     private static final Color ACTIVE_ORANGE = new Color(247, 148, 29);
     private static final Color NEUTRAL_GREY = new Color(122, 139, 153);
     private static final Color CLEAN_WHITE = Color.WHITE;
-
-    // --- Main Entry Point ---
 
     public static void show(int productionLineId) {
         JDialog dialog = new JDialog((Frame) null, "Create New Task", true);
@@ -30,11 +27,10 @@ public class AddTask {
 
         JPanel mainPanel = new JPanel(new GridLayout(1, 2));
 
-        // --- LEFT PANEL (Form) ---
+        // --- LEFT PANEL ---
         JPanel leftPanel = new JPanel(null);
-        leftPanel.setBackground(new Color(225, 238, 245)); // Light Blue
+        leftPanel.setBackground(new Color(225, 238, 245));
 
-        // Header
         JPanel header = new JPanel(null);
         header.setBackground(INDUSTRIAL_BLUE);
         header.setBounds(0, 0, 400, 80);
@@ -46,60 +42,61 @@ public class AddTask {
         header.add(title);
         leftPanel.add(header);
 
-        // Field: Client Name
+        // Client
         JLabel lblClient = new JLabel("Client Name:");
         lblClient.setFont(new Font("Arial", Font.BOLD, 14));
-        lblClient.setBounds(40, 110, 100, 20);
+        lblClient.setBounds(40, 120, 100, 20);
         leftPanel.add(lblClient);
 
         JTextField clientField = new JTextField();
-        clientField.setBounds(40, 135, 300, 30);
+        clientField.setBounds(40, 145, 300, 30);
         leftPanel.add(clientField);
 
-        // Field: Product (Dropdown)
+        // Product (Custom Renderer)
         JLabel lblProduct = new JLabel("Required Product:");
         lblProduct.setFont(new Font("Arial", Font.BOLD, 14));
-        lblProduct.setBounds(40, 180, 150, 20);
+        lblProduct.setBounds(40, 190, 150, 20);
         leftPanel.add(lblProduct);
 
         JComboBox<Product> productCombo = new JComboBox<>();
+        // Set Custom Renderer to show ONLY the name
+        productCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Product) {
+                    setText(((Product) value).getName());
+                }
+                return this;
+            }
+        });
+
         if (ProductController.getProducts() != null) {
             for (Product p : ProductController.getProducts().values()) {
                 productCombo.addItem(p);
             }
         }
-        productCombo.setBounds(40, 205, 300, 30);
+        productCombo.setBounds(40, 215, 300, 30);
         leftPanel.add(productCombo);
 
-        // Field: Quantity
+        // Quantity
         JLabel lblQty = new JLabel("Quantity:");
         lblQty.setFont(new Font("Arial", Font.BOLD, 14));
-        lblQty.setBounds(40, 250, 100, 20);
+        lblQty.setBounds(40, 260, 100, 20);
         leftPanel.add(lblQty);
 
         JTextField qtyField = new JTextField();
-        qtyField.setBounds(40, 275, 300, 30);
+        qtyField.setBounds(40, 285, 300, 30);
         leftPanel.add(qtyField);
 
-        // Field: Start Date
-        JLabel lblStart = new JLabel("Start Date (YYYY-MM-DD):");
-        lblStart.setFont(new Font("Arial", Font.BOLD, 14));
-        lblStart.setBounds(40, 320, 200, 20);
-        leftPanel.add(lblStart);
-
-        JTextField startField = new JTextField();
-        startField.setBounds(40, 345, 300, 30);
-        startField.setText(LocalDate.now().toString()); // Default to today
-        leftPanel.add(startField);
-
-        // Field: Delivery Date
+        // Delivery Date (Start Date Removed)
         JLabel lblEnd = new JLabel("Delivery Date (YYYY-MM-DD):");
         lblEnd.setFont(new Font("Arial", Font.BOLD, 14));
-        lblEnd.setBounds(40, 390, 250, 20);
+        lblEnd.setBounds(40, 330, 250, 20);
         leftPanel.add(lblEnd);
 
         JTextField endField = new JTextField();
-        endField.setBounds(40, 415, 300, 30);
+        endField.setBounds(40, 355, 300, 30);
         leftPanel.add(endField);
 
         // Buttons
@@ -108,7 +105,7 @@ public class AddTask {
         btnAdd.setForeground(CLEAN_WHITE);
         btnAdd.setFont(new Font("Arial", Font.BOLD, 14));
         btnAdd.setFocusPainted(false);
-        btnAdd.setBounds(40, 480, 140, 40);
+        btnAdd.setBounds(40, 420, 140, 40);
         leftPanel.add(btnAdd);
 
         JButton btnCancel = new JButton("CANCEL");
@@ -116,10 +113,10 @@ public class AddTask {
         btnCancel.setForeground(CLEAN_WHITE);
         btnCancel.setFont(new Font("Arial", Font.BOLD, 14));
         btnCancel.setFocusPainted(false);
-        btnCancel.setBounds(200, 480, 140, 40);
+        btnCancel.setBounds(200, 420, 140, 40);
         leftPanel.add(btnCancel);
 
-        // --- RIGHT PANEL (Image) ---
+        // --- RIGHT PANEL ---
         JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBackground(CLEAN_WHITE);
 
@@ -130,15 +127,13 @@ public class AddTask {
 
         JLabel machineLabel = new JLabel();
         machineLabel.setHorizontalAlignment(JLabel.CENTER);
-        // Using standard task image
+
         ImageIcon icon = new ImageIcon("assets/cloths.jpg");
-        // Scale proportionally
         Image img = icon.getImage().getScaledInstance(300, 200, Image.SCALE_DEFAULT);
         machineLabel.setIcon(new ImageIcon(img));
         imagePanel.add(machineLabel, BorderLayout.CENTER);
 
         // --- Logic ---
-
         btnAdd.addActionListener(e -> {
             try {
                 String client = clientField.getText().trim();
@@ -150,8 +145,11 @@ public class AddTask {
                 int quantity = Integer.parseInt(qtyField.getText().trim());
                 if (quantity <= 0) throw new IllegalArgumentException("Quantity must be positive.");
 
-                LocalDate startDate = LocalDate.parse(startField.getText().trim());
+                // Start Date is AUTOMATICALLY set to NOW
+                LocalDate startDate = LocalDate.now();
                 LocalDate endDate = LocalDate.parse(endField.getText().trim());
+
+                if (endDate.isBefore(startDate)) throw new IllegalArgumentException("Delivery date cannot be in the past.");
 
                 Task newTask = new Task(selectedProduct, quantity, client, startDate, endDate, "ACTIVE", ProductLineController.getProductLines().get(productionLineId));
 
@@ -160,11 +158,8 @@ public class AddTask {
                 JOptionPane.showMessageDialog(dialog, "Task added Successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 dialog.dispose();
 
-                // Refresh View if possible
                 JFrame mainFrame = MainController.getFrame();
                 if (mainFrame != null) {
-                    // We assume we want to refresh the view we were just looking at (Tasks for this line)
-                    // We need to fetch the updated line object to display
                     model.ProductLine updatedLine = controller.ProductLineController.getProductLines().get(productionLineId);
                     if (updatedLine != null) {
                         TaskView.showTasksForLine(mainFrame, DashBoard.getLeftPanel(), updatedLine);
