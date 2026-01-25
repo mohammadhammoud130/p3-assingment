@@ -4,12 +4,11 @@ public class Item {
     private static int nextId = 1;
     private final int id;
     private String name;
-private Category category;
+    private Category category;
     private int quantity;
     private int minThreshold;
     private double price;
 
-    // Normal constructor (auto ID)
     public Item(String name, String category, double price, int quantity, int minThreshold) {
         this.id = nextId++;
         this.name = name;
@@ -18,7 +17,6 @@ private Category category;
         this.quantity = quantity;
         this.minThreshold = minThreshold;
     }
-    // Constructor for reloading from CSV
     public Item(int id, String name, String category, double price, int quantity, int minThreshold) {
         this.id = id;
         this.name = name;
@@ -50,21 +48,7 @@ private Category category;
 
     public Category getCategory() { return category; }
 
-    public void setCategory(String category) {
-        if (category == null || category.trim().isEmpty()) {
-            throw new IllegalArgumentException("Item category cannot be null or empty.");
-        }
-        this.category = Category.valueOf(category);
-    }
-
     public double getPrice() { return price; }
-
-    public void setPrice(double price) {
-        if (price < 0) {
-            throw new IllegalArgumentException("Price cannot be negative.");
-        }
-        this.price = price;
-    }
 
     public int getQuantity() { return quantity; }
 
@@ -76,13 +60,6 @@ private Category category;
     }
 
     public int getMinThreshold() { return minThreshold; }
-
-    public void setMinThreshold(int minThreshold) {
-        if (minThreshold < 0) {
-            throw new IllegalArgumentException("Minimum threshold cannot be negative.");
-        }
-        this.minThreshold = minThreshold;
-    }
 
     @Override
     public String toString() {

@@ -4,13 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Product {
-    private static int nextId = 1;   // shared counter
-    private final int id;            // unique per instance
+    private static int nextId = 1;
+    private final int id;
     private String name;
     private Map<Item, Integer> requiredItems = new HashMap<>();
     private double estimatedTime;
 
-    // Constructor with parameters
     public Product(String name, HashMap<Item, Integer> requiredItems, double estimatedTime) {
         this.id = nextId++;
         this.name = name;
@@ -18,13 +17,12 @@ public class Product {
         this.estimatedTime = estimatedTime;
     }
 
-    // Constructor for reloading from CSV
     public Product(int id, HashMap<Item, Integer> requiredItems, double estimatedTime) {
         this.id = id;
         this.requiredItems = requiredItems;
         this.estimatedTime = estimatedTime;
         if (id >= nextId) {
-            nextId = id + 1; // keep counter in sync
+            nextId = id + 1;
         }
     }
 

@@ -65,6 +65,8 @@ public class DashBoard extends JPanel{
 
         SideButton productionLines = new SideButton("PRODUCTION LINES", new ImageIcon("assets/productionlines.png"));
         buttonBox.add(productionLines);
+        SideButton orders = new SideButton("ORDERS",new ImageIcon("assets/orders.png"));
+        buttonBox.add(orders);
         SideButton inventory = new SideButton("INVENTORY",new ImageIcon("assets/inventory.png"));
         buttonBox.add(inventory);
         buttonBox.add(Box.createVerticalGlue()); // pushes next button to bottom
@@ -92,8 +94,13 @@ public class DashBoard extends JPanel{
             Storage.storage(frame , leftPanel);
         });
         productionLines.addActionListener(e->{
-            ProductionLines.showProductionLines(frame,leftPanel);
+            ProductionLines.showProductionLinesForSupervisor(frame,leftPanel);
         });
+        orders.addActionListener(e->{
+                    TaskView.showAllTasks(frame,leftPanel);
+                }
+        );
+
 
         frame.setContentPane(panel);
         frame.revalidate();
@@ -152,8 +159,6 @@ public class DashBoard extends JPanel{
 
         SideButton productionLines = new SideButton("PRODUCTION LINES", new ImageIcon("assets/productionlines.png"));
         buttonBox.add(productionLines);
-        SideButton orders = new SideButton("ORDERS",new ImageIcon("assets/orders.png"));
-        buttonBox.add(orders);
         SideButton users = new SideButton("USERS",new ImageIcon("assets/users-orange.png"));
         buttonBox.add(users);
         SideButton inventory = new SideButton("INVENTORY",new ImageIcon("assets/inventory.png"));
@@ -183,10 +188,6 @@ public class DashBoard extends JPanel{
         productionLines.addActionListener(e ->{
             ProductionLines.showProductionLines(frame,leftPanel);
         });
-        orders.addActionListener(e->{
-            TaskView.showAllTasks(frame,leftPanel);
-                }
-                );
 
         frame.setContentPane(panel);
         frame.revalidate();

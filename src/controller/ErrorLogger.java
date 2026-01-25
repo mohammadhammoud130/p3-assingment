@@ -10,14 +10,11 @@ import java.time.format.DateTimeFormatter;
 public class ErrorLogger {
 
     public static void logWarning(String message) {
-        // Format the current time
         String timestamp = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        // Combine timestamp with the warning message
         String logEntry = "[" + timestamp + "] " + message;
 
-        // Write to error.txt (append mode)
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("data/error.txt", true))) {
             writer.write(logEntry);
             writer.newLine();

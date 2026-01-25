@@ -7,12 +7,12 @@ import java.util.*;
 public class ProductLineController {
     private static HashMap<Integer, ProductLine> productLines = new HashMap<>();
     private static final String productLinesFilePath = "data/ProductLines.csv";
+    private static final String notesFilePath = "data/Notes.csv";
 
     public static HashMap<Integer, ProductLine> productLinesLoader() {
         HashMap<Integer, ProductLine> loadedLines = new HashMap<>();
         File file = new File(productLinesFilePath);
         int maxId = 0;
-
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line = reader.readLine();
 
@@ -27,6 +27,26 @@ public class ProductLineController {
 
                     ProductLine lineObj = new ProductLine(id, name, status, new ArrayList<>());
                     loadedLines.put(id, lineObj);
+
+                    try(BufferedReader nReader = new BufferedReader(new FileReader(notesFilePath))){
+                        String nLine = nReader.readLine();
+                        while ((nLine = nReader.readLine()) != null){
+                            String[] nFields = nLine.split(",") ;
+                            if(nFields.length<2)continue;
+                            if(Integer.parseInt(nFields[0]) == id){
+                                lineObj.addNote(fields[1]);
+                            }
+                        }
+                    }catch (FileNotFoundException e){
+                        System.err.println("ProductLines file not found: " + notesFilePath);
+                        ErrorLogger.logWarning("ProductLines file not found: " + notesFilePath);
+                    }catch (SecurityException e){
+                        System.err.println("No permission to read items file: " + notesFilePath);
+                        ErrorLogger.logWarning("No permission to read items file: " + notesFilePath);
+                    }catch (IOException e){
+                        System.err.println("Error reading items file: " + e.getMessage());
+                        ErrorLogger.logWarning("Error reading items file: " + e.getMessage());
+                    }
 
                     if (id > maxId) maxId = id;
 
@@ -114,6 +134,15 @@ public class ProductLineController {
         }
 
         line.setStatus(newStatus);
+
+        if(newStatus == Status.MAINTENANCE || newStatus == Status.PAUSED){
+            for (Task task : line.getTasks()){
+                if(task.getStatus() != Status.FINISHED){
+                    task.setStatus(Status.PAUSED);
+                }
+            }
+        }
+
         updateProductLinesFile();
     }
 
@@ -167,6 +196,11 @@ public class ProductLineController {
     public static HashMap<Integer, ProductLine> getProductLines() {
         return productLines;
     }
+
+    public static void addNoteToLine(int id, String message){
+        productLines.get(id).getNotes().add(message);
+    }
+
 
     public static void setProductLines(HashMap<Integer, ProductLine> productLines) {
         ProductLineController.productLines = productLines;

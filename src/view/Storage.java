@@ -2,8 +2,9 @@ package view;
 
 import controller.ItemController;
 import controller.ProductController;
-import model.Item;
-import model.Product;
+import controller.ProductLineController;
+import controller.TaskController;
+import model.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -11,6 +12,11 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Storage {
 
@@ -18,21 +24,22 @@ public class Storage {
     private static final Color activeOrange = new Color(0xF7941D);
     private static final Color cleanWhite = Color.WHITE;
 
+    private static JPanel itemsGrid;
+
     // --- Custom Components ---
 
     static class BackgroundPanel extends JPanel {
         private final Image background;
         private final int arc = 30;
-        private Color overlayColor = new Color(0, 0, 0, 140); // Default dark overlay
+        private Color overlayColor = new Color(0, 0, 0, 140);
 
         public BackgroundPanel(ImageIcon icon) {
             this.background = (icon != null) ? icon.getImage() : null;
             setLayout(new BorderLayout());
             setOpaque(false);
-            setBorder(new EmptyBorder(15, 20, 15, 20)); // Padding inside the card
+            setBorder(new EmptyBorder(15, 20, 15, 20));
         }
 
-        // Allow changing overlay color (e.g. for Add button)
         public void setOverlayColor(Color c) {
             this.overlayColor = c;
             repaint();
@@ -42,23 +49,17 @@ public class Storage {
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            // Clip to rounded shape
             RoundRectangle2D roundedRect = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc);
             g2.setClip(roundedRect);
 
             if (background != null) {
-                // Draw Image
                 g2.drawImage(background, 0, 0, getWidth(), getHeight(), this);
-
-                // Draw Overlay INSIDE the clip
                 g2.setColor(overlayColor);
                 g2.fill(roundedRect);
             } else {
                 g2.setColor(industrialBlue);
                 g2.fill(roundedRect);
             }
-
             g2.dispose();
             super.paintComponent(g);
         }
@@ -126,6 +127,7 @@ public class Storage {
         itemBtn.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 ((CardLayout) contentPanel.getLayout()).show(contentPanel, "ITEM_VIEW");
+                resetItemSearch();
             }
         });
 
@@ -142,40 +144,52 @@ public class Storage {
         frame.repaint();
     }
 
+    private static void resetItemSearch() {
+        if (itemsGrid != null && ItemController.getItems() != null) {
+            refreshItemGrid(itemsGrid, ItemController.getItems().values());
+        }
+    }
+
+    // --- Product View ---
+
     private static JPanel ProductView(JPanel container) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
 
         JPanel productsGrid = new JPanel(new GridLayout(0, 3, 30, 40));
         productsGrid.setOpaque(false);
-        productsGrid.setBorder(new EmptyBorder(30, 30, 30, 30));
+
+        // Header with Search Button
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setOpaque(true);
+        topBar.setBackground(industrialBlue);
+        topBar.setBorder(new EmptyBorder(10, 20, 10, 20));
+
+        JLabel title = new JLabel("Products");
+        title.setFont(new Font("SansSerif", Font.BOLD, 24));
+        title.setForeground(cleanWhite);
+
+        JButton searchBtn = new JButton(new ImageIcon("assets/search.png"));
+        searchBtn.setContentAreaFilled(false);
+        searchBtn.setBorderPainted(false);
+        searchBtn.setFocusPainted(false);
+        searchBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        searchBtn.addActionListener(e -> showProductSearchPopup(productsGrid));
+
+        topBar.add(title, BorderLayout.WEST);
+        topBar.add(searchBtn, BorderLayout.EAST);
+        panel.add(topBar, BorderLayout.NORTH);
+
+        // Content
+
 
         if (ProductController.getProducts() != null) {
-            for (Product product : ProductController.getProducts().values()) {
-                productsGrid.add(createProductPanel(product, productsGrid));
-            }
+            refreshProductGrid(productsGrid, ProductController.getProducts().values());
         }
 
-        // Add Card
-        BackgroundPanel addCard = new BackgroundPanel(new ImageIcon("assets/product.png"));
-        addCard.setPreferredSize(new Dimension(400, 255));
-        addCard.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        addCard.setOverlayColor(new Color(0, 0, 0, 80)); // Lighter overlay for add card if desired
-
-        // Use GridBag to center the plus icon
-        addCard.setLayout(new GridBagLayout());
-        addCard.add(new JLabel(new ImageIcon("assets/add-orange.png")));
-
-        addCard.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                AddProduct.show();
-            }
-        });
-        productsGrid.add(addCard);
-
-        JPanel gridWrapper = new JPanel(new BorderLayout());
+        JPanel gridWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 30));
         gridWrapper.setOpaque(false);
-        gridWrapper.add(productsGrid, BorderLayout.NORTH);
+        gridWrapper.add(productsGrid);
 
         JScrollPane scrollPane = new JScrollPane(gridWrapper);
         scrollPane.setOpaque(false);
@@ -196,37 +210,56 @@ public class Storage {
         return panel;
     }
 
+    // --- Item View ---
+
     private static JPanel ItemView(JPanel container) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
 
-        JPanel itemsGrid = new JPanel(new GridLayout(0, 3, 30, 40));
+        // Header
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setOpaque(true);
+        topBar.setBackground(industrialBlue);
+        topBar.setBorder(new EmptyBorder(10, 20, 10, 20));
+
+        JLabel title = new JLabel("Inventory");
+        title.setFont(new Font("SansSerif", Font.BOLD, 24));
+        title.setForeground(cleanWhite);
+
+        JButton searchBtn = new JButton(new ImageIcon("assets/search.png"));
+        searchBtn.setContentAreaFilled(false);
+        searchBtn.setBorderPainted(false);
+        searchBtn.setFocusPainted(false);
+        searchBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        topBar.add(title, BorderLayout.WEST);
+        topBar.add(searchBtn, BorderLayout.EAST);
+
+        panel.add(topBar, BorderLayout.NORTH);
+
+        // Footer
+        JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomBar.setOpaque(true);
+        bottomBar.setBackground(industrialBlue);
+        bottomBar.setBorder(new EmptyBorder(10, 20, 10, 20));
+        bottomBar.add(createBackButton(container));
+
+        panel.add(bottomBar, BorderLayout.SOUTH);
+
+        // Content
+        itemsGrid = new JPanel(new GridLayout(0, 3, 30, 40));
         itemsGrid.setOpaque(false);
-        itemsGrid.setBorder(new EmptyBorder(30, 30, 30, 30));
 
         if (ItemController.getItems() != null) {
-            for (Item item : ItemController.getItems().values()) {
-                itemsGrid.add(createItemPanel(item, itemsGrid));
-            }
+            refreshItemGrid(itemsGrid, ItemController.getItems().values());
         }
 
-        BackgroundPanel addCard = new BackgroundPanel(new ImageIcon("assets/default-item.png"));
-        addCard.setPreferredSize(new Dimension(400, 255));
-        addCard.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        searchBtn.addActionListener(e -> showItemsSearchPopup(itemsGrid));
 
-        addCard.setLayout(new GridBagLayout());
-        addCard.add(new JLabel(new ImageIcon("assets/add-orange.png")));
-
-        addCard.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                AddItem.show();
-            }
-        });
-        itemsGrid.add(addCard);
-
-        JPanel gridWrapper = new JPanel(new BorderLayout());
+        // Use FlowLayout Wrapper
+        JPanel gridWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 30));
         gridWrapper.setOpaque(false);
-        gridWrapper.add(itemsGrid, BorderLayout.NORTH);
+        gridWrapper.add(itemsGrid);
 
         JScrollPane scrollPane = new JScrollPane(gridWrapper);
         scrollPane.setOpaque(false);
@@ -236,15 +269,45 @@ public class Storage {
 
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottomBar.setOpaque(true);
-        bottomBar.setBackground(industrialBlue);
-        bottomBar.setBorder(new EmptyBorder(10, 20, 10, 20));
-        bottomBar.add(createBackButton(container));
-
-        panel.add(bottomBar, BorderLayout.SOUTH);
-
         return panel;
+    }
+
+    // --- Grid Helpers ---
+    private static void refreshProductGrid(JPanel productsGrid, Collection<Product> productsToShow) {
+        productsGrid.removeAll();
+        for (Product product : productsToShow) {
+            productsGrid.add(createProductPanel(product, productsGrid));
+        }
+        productsGrid.add(createAddCard("assets/product.png", "assets/add-orange.png", AddProduct::show));
+        productsGrid.revalidate(); productsGrid.repaint();
+    }
+
+    private static void refreshItemGrid(JPanel itemsGrid, Collection<Item> itemsToShow) {
+        itemsGrid.removeAll();
+
+        for (Item item : itemsToShow) {
+            itemsGrid.add(createItemPanel(item, itemsGrid));
+        }
+
+        itemsGrid.add(createAddCard("assets/default-item.png", "assets/add-orange.png", AddItem::show));
+
+        itemsGrid.revalidate();
+        itemsGrid.repaint();
+    }
+
+    private static BackgroundPanel createAddCard(String bgImage, String iconImage, Runnable action) {
+        BackgroundPanel card = new BackgroundPanel(new ImageIcon(bgImage));
+        card.setPreferredSize(new Dimension(400, 255));
+        card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        card.setLayout(new GridBagLayout());
+        card.add(new JLabel(new ImageIcon(iconImage)));
+
+        card.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) { action.run(); }
+        });
+
+        return card;
     }
 
     private static JButton createBackButton(JPanel container) {
@@ -255,6 +318,8 @@ public class Storage {
         backBtn.addActionListener(e -> ((CardLayout) container.getLayout()).show(container, "MENU"));
         return backBtn;
     }
+
+    // --- Panel Creators ---
 
     private static BackgroundPanel createItemPanel(Item item, JPanel parentGrid) {
         ImageIcon bg = new ImageIcon("assets/default-item.png");
@@ -267,11 +332,8 @@ public class Storage {
         }
         BackgroundPanel panel = new BackgroundPanel(bg);
         panel.setPreferredSize(new Dimension(400, 255));
-
-        // Remove the inner overlay panel, use the BackgroundPanel itself
         panel.setLayout(new BorderLayout());
 
-        // --- Top: Delete Button ---
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         topPanel.setOpaque(false);
         JButton deleteBtn = new JButton(new ImageIcon("assets/delete.png"));
@@ -290,7 +352,6 @@ public class Storage {
         });
         topPanel.add(deleteBtn);
 
-        // --- Center: Info ---
         JPanel centerPanel = new JPanel();
         centerPanel.setOpaque(false);
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
@@ -323,10 +384,9 @@ public class Storage {
         centerPanel.add(Box.createVerticalStrut(5));
         centerPanel.add(minLabel);
 
-        // --- Bottom: Edit Button ---
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         bottomPanel.setOpaque(false);
-        JButton editBtn = new JButton(new ImageIcon("assets/edit.png"));
+        JButton editBtn = new JButton(new ImageIcon("assets/edit-orange.png"));
         editBtn.setContentAreaFilled(false);
         editBtn.setBorderPainted(false);
         editBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -345,7 +405,6 @@ public class Storage {
         panel.setPreferredSize(new Dimension(400, 255));
         panel.setLayout(new BorderLayout());
 
-        // --- Top: Delete Button ---
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         topPanel.setOpaque(false);
         JButton deleteBtn = new JButton(new ImageIcon("assets/delete.png"));
@@ -363,7 +422,6 @@ public class Storage {
         });
         topPanel.add(deleteBtn);
 
-        // --- Center: Info ---
         JPanel centerPanel = new JPanel();
         centerPanel.setOpaque(false);
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
@@ -380,10 +438,9 @@ public class Storage {
         idLabel.setFont(valFont);
         idLabel.setForeground(cleanWhite);
 
-        JLabel timeLabel = new JLabel("Est. Time: " + product.getEstimatedTime() + "min");
+        JLabel timeLabel = new JLabel("Est. Time: " + product.getEstimatedTime() + "h");
         timeLabel.setFont(valFont);
         timeLabel.setForeground(cleanWhite);
-
 
         centerPanel.add(nameLabel);
         centerPanel.add(Box.createVerticalStrut(8));
@@ -391,7 +448,6 @@ public class Storage {
         centerPanel.add(Box.createVerticalStrut(5));
         centerPanel.add(timeLabel);
 
-        // --- Bottom: Requirements Button ---
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         bottomPanel.setOpaque(false);
         JButton reqBtn = new JButton("View Requirements");
@@ -408,6 +464,131 @@ public class Storage {
         panel.add(bottomPanel, BorderLayout.SOUTH);
 
         return panel;
+    }
+
+    // --- Popups ---
+
+    private static void showProductSearchPopup(JPanel grid) {
+        JDialog dialog = new JDialog((Frame) null, "Filter Products", true);
+        dialog.setSize(450, 350);
+        dialog.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(cleanWhite);
+        panel.setBorder(new EmptyBorder(20, 30, 20, 30));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 5, 10, 5);
+        gbc.weightx = 1.0;
+
+        JRadioButton rbLine = new JRadioButton("Filter by Production Line (Non-Active Tasks)");
+        JRadioButton rbDate = new JRadioButton("Most Required Product(s) (Date Range)");
+        ButtonGroup bg = new ButtonGroup(); bg.add(rbLine); bg.add(rbDate);
+        rbLine.setOpaque(false); rbDate.setOpaque(false);
+        rbLine.setSelected(true);
+
+        JComboBox<ProductLine> cmbLine = new JComboBox<>();
+        if (ProductLineController.getProductLines() != null) {
+            for (ProductLine line : ProductLineController.getProductLines().values()) cmbLine.addItem(line);
+        }
+        cmbLine.setRenderer(new DefaultListCellRenderer() {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof ProductLine) setText(((ProductLine)value).getName());
+                return this;
+            }
+        });
+
+        JTextField txtStart = new JTextField(LocalDate.now().minusDays(30).toString());
+        JTextField txtEnd = new JTextField(LocalDate.now().toString());
+        txtStart.setEnabled(false); txtEnd.setEnabled(false);
+
+        rbLine.addActionListener(e -> { cmbLine.setEnabled(true); txtStart.setEnabled(false); txtEnd.setEnabled(false); });
+        rbDate.addActionListener(e -> { cmbLine.setEnabled(false); txtStart.setEnabled(true); txtEnd.setEnabled(true); });
+
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2; panel.add(rbLine, gbc);
+        gbc.gridy = 1; panel.add(cmbLine, gbc);
+        gbc.gridy = 2; panel.add(rbDate, gbc);
+        gbc.gridy = 3; gbc.gridwidth = 1; panel.add(new JLabel("Start (YYYY-MM-DD):"), gbc);
+        gbc.gridx = 1; panel.add(txtStart, gbc);
+        gbc.gridx = 0; gbc.gridy = 4; panel.add(new JLabel("End (YYYY-MM-DD):"), gbc);
+        gbc.gridx = 1; panel.add(txtEnd, gbc);
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnPanel.setOpaque(false);
+        JButton btnReset = new JButton("Show All");
+        JButton btnApply = new JButton("Apply");
+        btnReset.setBackground(industrialBlue); btnReset.setForeground(cleanWhite);
+        btnApply.setBackground(activeOrange); btnApply.setForeground(cleanWhite);
+
+        btnReset.addActionListener(e -> {
+            refreshProductGrid(grid, ProductController.getProducts().values());
+            dialog.dispose();
+        });
+
+        btnApply.addActionListener(e -> {
+            try {
+                if (rbLine.isSelected()) {
+                    ProductLine selectedLine = (ProductLine) cmbLine.getSelectedItem();
+                    if (selectedLine == null) return;
+                    List<Product> filtered = new ArrayList<>();
+                    if (selectedLine.getTasks() != null) {
+                        for (Task t : selectedLine.getTasks()) {
+                            if (t.getStatus() != Status.ACTIVE) filtered.add(t.getRequiresdProduct());
+                        }
+                    }
+                    filtered = filtered.stream().distinct().collect(Collectors.toList());
+                    refreshProductGrid(grid, filtered);
+                    dialog.dispose();
+
+                } else {
+                    // --- UPDATED LOGIC FOR MULTIPLE "MOST REQUIRED" ---
+                    LocalDate start = LocalDate.parse(txtStart.getText().trim());
+                    LocalDate end = LocalDate.parse(txtEnd.getText().trim());
+
+                    Map<Product, Integer> demandMap = new HashMap<>();
+                    for (Task t : TaskController.getTasks().values()) {
+                        LocalDate tDate = t.getStartDate();
+                        if ((tDate.isEqual(start) || tDate.isAfter(start)) &&
+                                (tDate.isEqual(end) || tDate.isBefore(end))) {
+                            Product p = t.getRequiresdProduct();
+                            demandMap.put(p, demandMap.getOrDefault(p, 0) + t.getRequiredQuantity());
+                        }
+                    }
+
+                    // 1. Find Max Value
+                    int maxQty = -1;
+                    for (int qty : demandMap.values()) {
+                        if (qty > maxQty) maxQty = qty;
+                    }
+
+                    // 2. Collect ALL products with that Max Value
+                    List<Product> topProducts = new ArrayList<>();
+                    if (maxQty > 0) {
+                        for (Map.Entry<Product, Integer> entry : demandMap.entrySet()) {
+                            if (entry.getValue() == maxQty) {
+                                topProducts.add(entry.getKey());
+                            }
+                        }
+                        refreshProductGrid(grid, topProducts);
+                        JOptionPane.showMessageDialog(dialog, "Found " + topProducts.size() + " product(s) with max demand: " + maxQty);
+                    } else {
+                        JOptionPane.showMessageDialog(dialog, "No tasks found in this range.");
+                    }
+                    dialog.dispose();
+                }
+            } catch (DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(dialog, "Invalid date format.");
+            }
+        });
+
+        btnPanel.add(btnReset);
+        btnPanel.add(btnApply);
+        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
+        panel.add(btnPanel, gbc);
+
+        dialog.add(panel);
+        dialog.setVisible(true);
     }
 
     private static void showEditItemPopup(Item item, JLabel qtyLabel) {
@@ -475,7 +656,7 @@ public class Storage {
         panel.setBackground(industrialBlue);
 
         BackgroundPanel content = new BackgroundPanel(new ImageIcon("assets/default-item.png"));
-        content.setLayout(new GridBagLayout());
+        content.setLayout(new BorderLayout());
 
         JPanel glassLayer = new JPanel(new GridBagLayout()) {
             @Override
@@ -514,6 +695,104 @@ public class Storage {
         content.add(glassLayer);
         panel.add(content);
         dialog.setContentPane(panel);
+        dialog.setVisible(true);
+    }
+
+    private static void showItemsSearchPopup(JPanel itemsGrid) {
+        JDialog dialog = new JDialog((Frame)null, "Filter Items", true);
+        dialog.setSize(400, 480);
+        dialog.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(cleanWhite);
+        panel.setBorder(new EmptyBorder(20, 30, 20, 30));
+
+        JLabel lblName = new JLabel("Search by Name:");
+        lblName.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JTextField txtName = new JTextField();
+        txtName.setMaximumSize(new Dimension(400, 30));
+        txtName.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel lblCat = new JLabel("Category:");
+        lblCat.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JComboBox<String> cmbCat = new JComboBox<>();
+        cmbCat.addItem("All Categories");
+        for(model.Category c : model.Category.values()) {
+            cmbCat.addItem(c.name());
+        }
+        cmbCat.setMaximumSize(new Dimension(400, 30));
+        cmbCat.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel lblStatus = new JLabel("Status (Select to filter):");
+        lblStatus.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JCheckBox chkAvailable = new JCheckBox("Available (Qty > Min)");
+        JCheckBox chkUnder = new JCheckBox("Under Min Threshold");
+        JCheckBox chkEmpty = new JCheckBox("Out of Stock (Empty)");
+
+        chkAvailable.setOpaque(false);
+        chkUnder.setOpaque(false);
+        chkEmpty.setOpaque(false);
+
+        JButton btnSearch = new JButton("Search");
+        btnSearch.setBackground(activeOrange);
+        btnSearch.setForeground(cleanWhite);
+
+        JButton btnReset = new JButton("Show All");
+        btnReset.setBackground(industrialBlue);
+        btnReset.setForeground(cleanWhite);
+
+        btnSearch.addActionListener(e -> {
+            String query = txtName.getText().toLowerCase().trim();
+            String selectedCat = (String) cmbCat.getSelectedItem();
+            List<Item> filteredList = new ArrayList<>();
+
+            for (Item item : ItemController.getItems().values()) {
+                if (!query.isEmpty() && !item.getName().toLowerCase().contains(query)) continue;
+                if (!"All Categories".equals(selectedCat) && !item.getCategory().name().equals(selectedCat)) continue;
+
+                boolean isAvailable = item.getQuantity() > item.getMinThreshold();
+                boolean isUnder = item.isUnderMinThreshold();
+                boolean isEmpty = item.getQuantity() == 0;
+                boolean matchesStatus = false;
+
+                if (chkAvailable.isSelected() && isAvailable) matchesStatus = true;
+                if (chkUnder.isSelected() && isUnder) matchesStatus = true;
+                if (chkEmpty.isSelected() && isEmpty) matchesStatus = true;
+                if (!chkAvailable.isSelected() && !chkUnder.isSelected() && !chkEmpty.isSelected()) matchesStatus = true;
+
+                if (matchesStatus) filteredList.add(item);
+            }
+            refreshItemGrid(itemsGrid, filteredList);
+            dialog.dispose();
+        });
+
+        btnReset.addActionListener(e -> {
+            refreshItemGrid(itemsGrid, ItemController.getItems().values());
+            dialog.dispose();
+        });
+
+        panel.add(lblName);
+        panel.add(txtName);
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(lblCat);
+        panel.add(cmbCat);
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(lblStatus);
+        panel.add(chkAvailable);
+        panel.add(chkUnder);
+        panel.add(chkEmpty);
+        panel.add(Box.createVerticalStrut(20));
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnPanel.setOpaque(false);
+        btnPanel.add(btnReset);
+        btnPanel.add(btnSearch);
+        btnPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(btnPanel);
+
+        dialog.add(panel);
         dialog.setVisible(true);
     }
 }

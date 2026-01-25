@@ -4,11 +4,12 @@ package model;
 import java.util.ArrayList;
 
 public class ProductLine {
-    private static int nextId = 1; // shared counter
+    private static int nextId = 1;
     private final int id ;
     private String name;
     private Status status;
     private ArrayList<Task> tasks;
+    private ArrayList<String> notes;
 
 
     public ProductLine(String name, Status status, ArrayList<Task> tasks) {
@@ -16,17 +17,18 @@ public class ProductLine {
         this.name = name;
         this.status = status;
         this.tasks = tasks;
+        this.notes = new ArrayList<String>();
     }
 
-    // Constructor for reloading from CSV or external source
     public ProductLine(int id, String name, Status status, ArrayList<Task> tasks) {
         this.id = id;
         this.name = name;
         this.status = status;
         this.tasks = (tasks != null) ? tasks : new ArrayList<>();
         if (id >= nextId) {
-            nextId = id + 1; // keep counter in sync
+            nextId = id + 1;
         }
+        this.notes = new ArrayList<String>();
     }
 
     public static void resetIdCounter(int newNextId) { nextId = newNextId; }
@@ -59,4 +61,15 @@ public class ProductLine {
         this.tasks = tasks;
     }
 
+    public ArrayList<String> getNotes() {
+        return notes;
+    }
+
+    public void setNotes(ArrayList<String> notes) {
+        this.notes = notes;
+    }
+
+    public void addNote(String note){
+        this.notes.add(note);
+    }
 }

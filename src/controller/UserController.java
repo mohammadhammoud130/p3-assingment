@@ -1,6 +1,5 @@
 package controller;
 
-import com.sun.tools.javac.Main;
 import exception.UserAlreadyLoggedInException;
 import model.Rule;
 import model.User;
@@ -90,19 +89,18 @@ public class UserController {
             String msg = user.getUserName() + " username is already taken";
             System.err.println(msg);
             ErrorLogger.logWarning(msg);
-            return false; // Indicate failure
+            return false;
         }
 
         users.put(user.getUserName(), user);
 
         try (BufferedWriter userAdder = new BufferedWriter(new FileWriter(usersFilePath, true))) {
-            // Note: Removed the extra '\n' at end of write line if your reader handles lines properly,
-            // but keeping it consistent with your style. Better to use newLine().
+
             userAdder.write(user.getUserName() + "," +
                     user.getPassword() + "," +
                     user.getRule().name());
-            userAdder.newLine(); // Use newLine() for cross-platform compatibility
-            return true; // Indicate success
+            userAdder.newLine();
+            return true;
 
         } catch (FileNotFoundException e) {
             System.err.println("Users file not found when writing: " + usersFilePath);

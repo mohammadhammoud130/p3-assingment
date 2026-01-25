@@ -19,6 +19,7 @@ public class TaskRunner {
         if (isSystemRunning) return;
         isSystemRunning = true;
 
+        // 1. Task Monitor Thread (Starts new tasks)
         Thread monitorThread = new Thread(() -> {
             while (isSystemRunning) {
                 try {
@@ -31,7 +32,22 @@ public class TaskRunner {
         });
         monitorThread.setDaemon(true);
         monitorThread.start();
-        System.out.println("Production System Started.");
+
+        Thread fileSaverThread = new Thread(() -> {
+            while (isSystemRunning) {
+                try {
+                    Thread.sleep(2000);
+                    TaskController.updateTasksFile();
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        fileSaverThread.setDaemon(true);
+        fileSaverThread.start();
+
+        System.out.println("Production System Started (Monitor & Auto-Save).");
     }
 
     private static void checkAndStartTasks() {
@@ -64,13 +80,13 @@ public class TaskRunner {
                     break;
                 }
 
-                // 1. Update Task Progress
                 int newQty = task.getProducedQuantity() + 1;
                 task.setProducedQuantity(newQty);
-                TaskController.updateTasksFile();
+
+
 
                 if (newQty >= task.getRequiredQuantity()) {
-                    TaskController.updateTaskStatus(task.getId(), Status.FINISHED);
+                    task.setStatus(Status.FINISHED);
                 }
             }
             runningTaskIds.remove(task.getId());

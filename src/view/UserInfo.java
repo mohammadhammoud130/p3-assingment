@@ -22,7 +22,7 @@ public class UserInfo extends JPanel {
 
         public BackgroundPanel(ImageIcon icon) {
             this.background = (icon != null) ? icon.getImage() : null;
-            setLayout(null); // Use NULL layout for custom positioning if needed, or GridBag
+            setLayout(null);
             setOpaque(false);
         }
 
@@ -31,17 +31,14 @@ public class UserInfo extends JPanel {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            // Clip to rounded shape
             RoundRectangle2D roundedRect = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc);
             g2.setClip(roundedRect);
 
             if (background != null) {
                 g2.drawImage(background, 0, 0, getWidth(), getHeight(), this);
-                // Dark Overlay for text readability
                 g2.setColor(new Color(0, 0, 0, 80));
                 g2.fill(roundedRect);
             } else {
-                // Fallback for solid color (used for Add Button if needed)
                 g2.setColor(industrialBlue);
                 g2.fill(roundedRect);
             }

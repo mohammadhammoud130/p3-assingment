@@ -2,7 +2,6 @@ package controller;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import view.Login;
-import view.DashBoard;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +30,6 @@ public class MainController {
          frame.setLocationRelativeTo(null);
          frame.setVisible(true);
          Login.login(frame);
-//         ManagerDashBoard.managerDashBoard(frame);
      }
 
     static {
@@ -51,6 +49,7 @@ public class MainController {
         TaskController.updateTasksFile();
         return JFrame.EXIT_ON_CLOSE;
     }
+
     public static JFrame getFrame() {
       return MainController.frame;
     }

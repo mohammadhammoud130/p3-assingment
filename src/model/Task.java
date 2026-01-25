@@ -6,19 +6,18 @@ import java.time.LocalDate;
 import java.util.Map;
 
 public class Task {
-    private static int nextId = 1;   // shared counter
-    private final int id;            // unique per instance
+    private static int nextId = 1;
+    private final int id;
     private Product requiredProduct;
     private int requiredQuantity;
     private int producedQuantity;
     private String client;
     private LocalDate startDate;
     private LocalDate deliveryDate;
-    private Status status;  // ["Active", "Finished", "Paused"]
+    private Status status;
     private double progress;
     private ProductLine assignedLine;
 
-    // Default constructor
 
     public Task(int id, Product requiredProduct, int requiredQuantity, int producedQuantity,
                 String client, LocalDate startDate, LocalDate deliveryDate,
@@ -35,7 +34,6 @@ public class Task {
         this.assignedLine = assignedLine;
     }
 
-    // Constructor with validation
     public Task(Product requiredProduct, int requiredQuantity, String client,
                 LocalDate startDate, LocalDate deliveryDate,
                 String status, ProductLine assignedLine) {
